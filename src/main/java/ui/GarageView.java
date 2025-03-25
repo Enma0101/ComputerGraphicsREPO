@@ -20,14 +20,13 @@ public class GarageView extends JFrame implements MouseListener {
 
     public GarageView() {
 
-        
         this.setExtendedState(JFrame.MAXIMIZED_BOTH);
         this.setDefaultCloseOperation(EXIT_ON_CLOSE);
         this.getContentPane().setBackground(ColorMain);
-        this.setResizable(false);
+        this.setResizable(true); // Cambiar a 'true' para que la ventana sea redimensionable
         this.setLayout(new BorderLayout());
 
-       
+        // Panel de título
         JPanel panelTitulo = new JPanel(new FlowLayout(FlowLayout.CENTER));
         panelTitulo.setBackground(ColorMain);
 
@@ -37,11 +36,14 @@ public class GarageView extends JFrame implements MouseListener {
         panelTitulo.add(label);
         this.add(panelTitulo, BorderLayout.NORTH);
 
-
-        // Panel de botones
-        JPanel panelBotones = new JPanel();
+        // Panel de botones (modificado para GridBagLayout)
+        JPanel panelBotones = new JPanel(new GridBagLayout());
         panelBotones.setBackground(ColorMain);
-        panelBotones.setLayout(new FlowLayout(FlowLayout.LEFT, 100, 850));
+
+        // Establecer restricciones para los botones
+        GridBagConstraints gbc = new GridBagConstraints();
+        gbc.fill = GridBagConstraints.HORIZONTAL;
+        gbc.insets = new Insets(10, 600, 50, 600); // Margen entre los botones
 
         // Botón "Back menu principal"
         buttonBack = new JButton("Back menu principal");
@@ -57,14 +59,9 @@ public class GarageView extends JFrame implements MouseListener {
                 buttonBack.getBorder(),
                 BorderFactory.createEmptyBorder(10, 20, 10, 20)
         ));
-
         buttonBack.addMouseListener(this);
 
-        // Panel de botones a la derecha
-        JPanel panelBotonDerecho = new JPanel();
-        panelBotonDerecho.setBackground(ColorMain);
-        panelBotonDerecho.setLayout(new FlowLayout(FlowLayout.RIGHT, 100, 850));
-
+        // Botón "Modificar Auto"
         buttonModificar = new JButton("Modificar Auto");
         buttonModificar.setBackground(ColorSen);
         buttonModificar.setForeground(ColorMain);
@@ -78,20 +75,24 @@ public class GarageView extends JFrame implements MouseListener {
                 buttonModificar.getBorder(),
                 BorderFactory.createEmptyBorder(10, 20, 10, 20)
         ));
-
         buttonModificar.addMouseListener(this);
 
-        panelBotones.add(buttonBack);
-        panelBotonDerecho.add(buttonModificar);
+        // Añadir los botones a la cuadrícula con restricciones
+        gbc.gridx = 1;
+        gbc.gridy = 0;
+        panelBotones.add(buttonBack, gbc);
 
-        this.add(panelBotones, BorderLayout.EAST);
-        this.add(panelBotonDerecho, BorderLayout.WEST);
+        gbc.gridx = 0;
+        gbc.gridy = 0;
+        panelBotones.add(buttonModificar, gbc);
+
+        this.add(panelBotones, BorderLayout.SOUTH);
 
         // Panel Central con margen
         JPanel panelCentral = new JPanel();
         panelCentral.setLayout(new BorderLayout());
         panelCentral.setBackground(ColorMain);
-        panelCentral.setBorder(BorderFactory.createEmptyBorder(50, 0, 200, 0));  // Margen en el panel central
+        panelCentral.setBorder(BorderFactory.createEmptyBorder(50, 300, 50, 300));  // Margen en el panel central
 
         JPanel panelImagen = new JPanel();
         panelImagen.setBackground(Color.darkGray);
@@ -100,11 +101,8 @@ public class GarageView extends JFrame implements MouseListener {
 
         this.add(panelCentral, BorderLayout.CENTER);
 
-
-
         this.setVisible(true);
     }
-
 
     private Color stringToColor(String rgb) {
         String[] rgbValues = rgb.split(",");
@@ -114,40 +112,31 @@ public class GarageView extends JFrame implements MouseListener {
         return new Color(red, green, blue);
     }
 
-
-
     @Override
-    public void mouseClicked(MouseEvent e) {
-    	
-    }
+    public void mouseClicked(MouseEvent e) {}
 
     @Override
     public void mousePressed(MouseEvent e) {
-    	 if (e.getSource() == buttonBack) {
-             buttonBack.setBackground(Color.white);
-            
-         } else if (e.getSource() == buttonModificar) {
-        	 buttonModificar.setBackground(Color.white);
-        	
-         }
-      
-    
+        if (e.getSource() == buttonBack) {
+            buttonBack.setBackground(Color.white);
+        } else if (e.getSource() == buttonModificar) {
+            buttonModificar.setBackground(Color.white);
+        }
     }
+
     @Override
     public void mouseReleased(MouseEvent e) {
-    	 if (e.getSource() == buttonBack) {
-             buttonBack.setBackground(ColorSen);
-             buttonBack.setForeground(ColorMain);
-         } else if (e.getSource() == buttonModificar) {
-        	 buttonModificar.setBackground(ColorSen);
-        	 buttonModificar.setForeground(ColorMain);
-         }
-   
+        if (e.getSource() == buttonBack) {
+            buttonBack.setBackground(ColorSen);
+            buttonBack.setForeground(ColorMain);
+        } else if (e.getSource() == buttonModificar) {
+            buttonModificar.setBackground(ColorSen);
+            buttonModificar.setForeground(ColorMain);
+        }
     }
 
     @Override
     public void mouseEntered(MouseEvent e) {
-       
         if (e.getSource() == buttonBack) {
             buttonBack.setFont(new Font(buttonBack.getFont().getName(), Font.BOLD, 30));
             buttonBack.setPreferredSize(new Dimension(350, 70));
@@ -161,7 +150,6 @@ public class GarageView extends JFrame implements MouseListener {
 
     @Override
     public void mouseExited(MouseEvent e) {
-        // Restaurar la apariencia del botón cuando el ratón sale
         if (e.getSource() == buttonBack) {
             buttonBack.setFont(new Font(buttonBack.getFont().getName(), Font.BOLD, 20));
             buttonBack.setPreferredSize(new Dimension(250, 50));
@@ -173,4 +161,3 @@ public class GarageView extends JFrame implements MouseListener {
         e.getComponent().repaint();
     }
 }
-
