@@ -43,7 +43,7 @@ public class GarageView extends JFrame implements MouseListener {
         // Establecer restricciones para los botones
         GridBagConstraints gbc = new GridBagConstraints();
         gbc.fill = GridBagConstraints.HORIZONTAL;
-        gbc.insets = new Insets(10, 600, 50, 600); // Margen entre los botones
+        gbc.insets = new Insets(10, 500, 50, 500); // Margen entre los botones
 
         // Botón "Back menu principal"
         buttonBack = new JButton("Back menu principal");
