@@ -43,7 +43,7 @@ public class GarageView extends JFrame implements MouseListener {
         // Establecer restricciones para los botones
         GridBagConstraints gbc = new GridBagConstraints();
         gbc.fill = GridBagConstraints.HORIZONTAL;
-        gbc.insets = new Insets(10, 500, 50, 500); // Margen entre los botones
+        gbc.insets = new Insets(10, 500,40, 500); // Margen entre los botones
 
         // Botón "Back menu principal"
         buttonBack = new JButton("Back menu principal");
@@ -139,10 +139,10 @@ public class GarageView extends JFrame implements MouseListener {
     public void mouseEntered(MouseEvent e) {
         if (e.getSource() == buttonBack) {
             buttonBack.setFont(new Font(buttonBack.getFont().getName(), Font.BOLD, 30));
-            buttonBack.setPreferredSize(new Dimension(350, 70));
+            buttonBack.setPreferredSize(new Dimension(300, 50));
         } else if (e.getSource() == buttonModificar) {
             buttonModificar.setFont(new Font(buttonModificar.getFont().getName(), Font.BOLD, 30));
-            buttonModificar.setPreferredSize(new Dimension(350, 70));
+            buttonModificar.setPreferredSize(new Dimension(300, 50));
         }
         e.getComponent().revalidate();
         e.getComponent().repaint();
