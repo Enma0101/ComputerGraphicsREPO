@@ -1,5 +1,115 @@
 package ui;
-//Opciones del juego.
-public class MenuPrincipal {
 
+import java.awt.BorderLayout;
+import java.awt.Color;
+import java.awt.Component;
+import java.awt.Dimension;
+import java.awt.Font;
+import java.awt.GradientPaint;
+import java.awt.Graphics;
+import java.awt.Graphics2D;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
+
+import javax.swing.BorderFactory;
+import javax.swing.Box;
+import javax.swing.BoxLayout;
+import javax.swing.JButton;
+import javax.swing.JFrame;
+import javax.swing.JLabel;
+import javax.swing.JOptionPane;
+import javax.swing.JPanel;
+import javax.swing.SwingConstants;
+import javax.swing.border.CompoundBorder;
+import javax.swing.border.EmptyBorder;
+import javax.swing.border.LineBorder;
+
+//Opciones del juego.
+
+public class MenuPrincipal extends JFrame {
+
+    public MenuPrincipal() {
+        // Configuración de la ventana
+        this.setExtendedState(JFrame.MAXIMIZED_BOTH);
+        this.setDefaultCloseOperation(EXIT_ON_CLOSE);
+        this.setTitle("Menu");
+        this.setLayout(new BorderLayout());
+        
+        // Panel principal con fondo negro
+        JPanel mainPanel = new JPanel() {
+            @Override
+            protected void paintComponent(Graphics g) {
+                super.paintComponent(g);
+                Graphics2D g2d = (Graphics2D) g;
+                // Gradient paint de negro a gris
+                g2d.setPaint(new GradientPaint(0, 0, Color.BLACK, getWidth(), getHeight(), new Color(30, 30, 30)));
+                g2d.fillRect(0, 0, getWidth(), getHeight());
+            }
+        };
+        // Box layout vertical
+        mainPanel.setLayout(new BoxLayout(mainPanel, BoxLayout.Y_AXIS)); 
+        mainPanel.setBackground(Color.BLACK);
+        
+        // Título 
+        JLabel titleLabel = new JLabel("RETRO RACER");
+        titleLabel.setFont(new Font("Press Start 2P", Font.BOLD, 60));
+        titleLabel.setForeground(new Color(255, 215, 0)); // Dorado
+        titleLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
+        titleLabel.setBorder(new EmptyBorder(50, 0, 50, 0));
+        titleLabel.setHorizontalAlignment(SwingConstants.CENTER); // Constante para alinear en centro puq no deja
+        
+        // Botones
+        JButton[] buttons = {
+            createMenuButton("CARRERA"),
+            createMenuButton("GARAGE"),
+            createMenuButton("HISTORIAL"),
+            createMenuButton("CONFIGURACIÓN"),
+            createMenuButton("SALIR")
+        };
+        
+        // Añadir componentes
+        mainPanel.add(titleLabel);
+        for (JButton button : buttons) {
+            mainPanel.add(button);
+            mainPanel.add(Box.createRigidArea(new Dimension(0, 20)));
+        }
+        
+        this.add(mainPanel, BorderLayout.CENTER);
+    }
+    
+    // Estilo de los botones
+    private JButton createMenuButton(String text) {
+        JButton button = new JButton(text) {
+            @Override
+            protected void paintComponent(Graphics g) {
+                Graphics2D g2d = (Graphics2D) g;
+                g2d.setPaint(new GradientPaint(0, 0, new Color(50, 50, 50), getWidth(), getHeight(), new Color(20, 20, 20)));
+                g2d.fillRoundRect(0, 0, getWidth(), getHeight(), 30, 30);
+                super.paintComponent(g);
+            }
+        };
+        
+        button.setFont(new Font("Press Start 2P", Font.PLAIN, 24));
+        button.setForeground(Color.WHITE);
+        button.setBorder(new LineBorder(new Color(200, 0, 0), 4, true));
+        button.setAlignmentX(Component.CENTER_ALIGNMENT);
+        button.setMaximumSize(new Dimension(400, 70));
+        button.setContentAreaFilled(false);
+        button.setFocusPainted(false);
+        button.setOpaque(false);
+        
+        // Efecto hover
+        button.addMouseListener(new MouseAdapter() {
+            public void mouseEntered(MouseEvent e) {
+                button.setForeground(new Color(255, 215, 0)); // Dorado
+                button.setBorder(new LineBorder(new Color(255, 215, 0), 4, true));
+            }
+            public void mouseExited(MouseEvent e) {
+                button.setForeground(Color.WHITE);
+                button.setBorder(new LineBorder(new Color(200, 0, 0), 4, true));
+            }
+        });
+        
+        return button;
+    }
 }
