@@ -9,8 +9,8 @@ import main.Main;
 
 public class GarageView extends JFrame implements MouseListener {
 
-    String ColorPrincipal = "188, 24, 35";
-    String Colorsecundario = "255, 242, 0";
+    String ColorPrincipal = "200, 204, 206";
+    String Colorsecundario = "0, 161, 155";
     String EquipoSeleccionado = "Ferrari";
     Color ColorMain = stringToColor(ColorPrincipal);
     Color ColorSen = stringToColor(Colorsecundario);
@@ -19,16 +19,18 @@ public class GarageView extends JFrame implements MouseListener {
 
     public GarageView() {
 
-        this.setExtendedState(JFrame.MAXIMIZED_BOTH);
+        this.setSize(1200,800);
         this.setDefaultCloseOperation(EXIT_ON_CLOSE);
         this.getContentPane().setBackground(ColorMain);
+        this.setResizable(false);
+        this.setLocationRelativeTo(null);
         this.setResizable(true); 
         this.setLayout(new BorderLayout());
 
         // Panel Título (Encabezado)
         JPanel panelTitulo = new JPanel(new FlowLayout(FlowLayout.CENTER));
         panelTitulo.setBackground(ColorMain);
-        panelTitulo.setBorder(BorderFactory.createEmptyBorder(50, 0, 0, 0));  // Separación del borde superior
+        panelTitulo.setBorder(BorderFactory.createEmptyBorder(50, 0, 20, 0));  // Separación del borde superior
 
         label = new JLabel("Garage  Team  " + EquipoSeleccionado);
         label.setForeground(ColorSen);
@@ -42,7 +44,7 @@ public class GarageView extends JFrame implements MouseListener {
 
         GridBagConstraints gbc = new GridBagConstraints();
         gbc.fill = GridBagConstraints.HORIZONTAL;
-        gbc.insets = new Insets(10, 400, 40, 400); 
+        gbc.insets = new Insets(10, 200, 40, 200); 
         
         // Botón "Back"
         buttonBack = new JButton("Back menu principal");
@@ -93,10 +95,10 @@ public class GarageView extends JFrame implements MouseListener {
 
         // Imagen del auto
         label2 = new JLabel();
-        URL imageUrl = getClass().getResource("/resources/Imagens/" + EquipoSeleccionado + "/Ferrari_Car.jpg");
+        URL imageUrl = getClass().getResource("/resources/Imagens/" + "Ferrari" + "/Ferrari_Car.jpg");
         ImageIcon imageIcon = new ImageIcon(imageUrl);
         Image image = imageIcon.getImage();
-        Image scaledImage = image.getScaledInstance(1000, 700, Image.SCALE_SMOOTH);
+        Image scaledImage = image.getScaledInstance(500, 400, Image.SCALE_SMOOTH);
         label2.setIcon(new ImageIcon(scaledImage));
 
         label2.setAlignmentX(Component.CENTER_ALIGNMENT);
@@ -110,9 +112,9 @@ public class GarageView extends JFrame implements MouseListener {
         JPanel panelStats = new JPanel();
         panelStats.setLayout(new BoxLayout(panelStats, BoxLayout.Y_AXIS));
         panelStats.setBackground(ColorMain);
-        panelStats.setBorder(BorderFactory.createEmptyBorder(200, 100, 100, 50)); // Ajustamos los márgenes
+        panelStats.setBorder(BorderFactory.createEmptyBorder(100, 100, 0, 50)); // Ajustamos los márgenes
 
-        stad = new JLabel("   [[ ESTADISTICAS - VEHICULO ]]");
+        stad = new JLabel("      ESTADISTICAS - VEHICULO ");
         Agarre = new JLabel("      Agarre :       Excelente");
         VelocidadMAX = new JLabel("    Velocidad Max :  350 km/h");
         Potencia = new JLabel("      Potencia :     1000 HP");
@@ -138,7 +140,7 @@ public class GarageView extends JFrame implements MouseListener {
 
         // Agregamos las etiquetas al panel
         panelStats.add(stad);
-        panelStats.add(Box.createVerticalStrut(20));  // Espacio entre las etiquetas
+        panelStats.add(Box.createVerticalStrut(30));  // Espacio entre las etiquetas
         panelStats.add(Agarre);
         panelStats.add(Box.createVerticalStrut(20));
         panelStats.add(VelocidadMAX);
@@ -189,11 +191,11 @@ public class GarageView extends JFrame implements MouseListener {
     @Override
     public void mouseEntered(MouseEvent e) {
         if (e.getSource() == buttonBack) {
-            buttonBack.setFont(new Font(buttonBack.getFont().getName(), Font.BOLD, 30));
-            buttonBack.setPreferredSize(new Dimension(300, 50));
+            buttonBack.setFont(new Font(buttonBack.getFont().getName(), Font.BOLD, 20));
+            buttonBack.setPreferredSize(new Dimension(200, 50));
         } else if (e.getSource() == buttonModificar) {
-            buttonModificar.setFont(new Font(buttonModificar.getFont().getName(), Font.BOLD, 30));
-            buttonModificar.setPreferredSize(new Dimension(300, 50));
+            buttonModificar.setFont(new Font(buttonModificar.getFont().getName(), Font.BOLD, 20));
+            buttonModificar.setPreferredSize(new Dimension(200, 50));
         }
         e.getComponent().revalidate();
         e.getComponent().repaint();
@@ -202,10 +204,10 @@ public class GarageView extends JFrame implements MouseListener {
     @Override
     public void mouseExited(MouseEvent e) {
         if (e.getSource() == buttonBack) {
-            buttonBack.setFont(new Font(buttonBack.getFont().getName(), Font.BOLD, 20));
+            buttonBack.setFont(new Font(buttonBack.getFont().getName(), Font.BOLD, 16));
             buttonBack.setPreferredSize(new Dimension(250, 50));
         } else if (e.getSource() == buttonModificar) {
-            buttonModificar.setFont(new Font(buttonModificar.getFont().getName(), Font.BOLD, 20));
+            buttonModificar.setFont(new Font(buttonModificar.getFont().getName(), Font.BOLD, 16));
             buttonModificar.setPreferredSize(new Dimension(250, 50));
         }
         e.getComponent().revalidate();
