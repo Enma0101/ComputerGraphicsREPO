@@ -4,6 +4,7 @@ import java.awt.*;
 
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
+import java.net.URL;
 
 import javax.swing.*;
 import main.Main;
@@ -15,10 +16,13 @@ public class GarageView extends JFrame implements MouseListener {
     String EquipoSeleccionado = "Ferrari";
     Color ColorMain = stringToColor(ColorPrincipal);
     Color ColorSen = stringToColor(Colorsecundario);
-    JLabel label;
+    JLabel label,label2;
     JButton buttonBack, buttonModificar;
+    
 
     public GarageView() {
+    	
+    	
 
         this.setExtendedState(JFrame.MAXIMIZED_BOTH);
         this.setDefaultCloseOperation(EXIT_ON_CLOSE);
@@ -44,7 +48,9 @@ public class GarageView extends JFrame implements MouseListener {
         GridBagConstraints gbc = new GridBagConstraints();
         gbc.fill = GridBagConstraints.HORIZONTAL;
         gbc.insets = new Insets(10, 500,40, 500); // Margen entre los botones
-
+        
+      
+   
         // Botón "Back menu principal"
         buttonBack = new JButton("Back menu principal");
         buttonBack.setBackground(ColorSen);
@@ -87,20 +93,29 @@ public class GarageView extends JFrame implements MouseListener {
         panelBotones.add(buttonModificar, gbc);
 
         this.add(panelBotones, BorderLayout.SOUTH);
-
-        // Panel Central con margen
+        
         JPanel panelCentral = new JPanel();
-        panelCentral.setLayout(new BorderLayout());
+        panelCentral.setLayout(new BoxLayout(panelCentral, BoxLayout.Y_AXIS));  // Usamos BoxLayout en el eje vertical
         panelCentral.setBackground(ColorMain);
-        panelCentral.setBorder(BorderFactory.createEmptyBorder(50, 300, 50, 300));  // Margen en el panel central
+        
+        // Crear un JLabel con la imagen
+        label2 = new JLabel();
+        URL imageUrl = getClass().getResource("/resources/Imagens/Ferrari/Ferrari_Car.jpg");
+        ImageIcon imageIcon = new ImageIcon(imageUrl);
+        Image image = imageIcon.getImage();
+        Image scaledImage = image.getScaledInstance(1000, 700, Image.SCALE_SMOOTH);  // Escalar imagen
+        label2.setIcon(new ImageIcon(scaledImage));
 
-        JPanel panelImagen = new JPanel();
-        panelImagen.setBackground(Color.darkGray);
-        panelImagen.setLayout(new BorderLayout());
-        panelCentral.add(panelImagen, BorderLayout.CENTER);
+        // Centramos el JLabel dentro del panel
+        label2.setAlignmentX(Component.CENTER_ALIGNMENT);  // Centra el JLabel en el panel
+        panelCentral.add(Box.createVerticalGlue());  // Espaciado vertical
+        panelCentral.add(label2);  // Agregar imagen al panel
+        panelCentral.add(Box.createVerticalGlue());  // Espaciado vertical
 
+        // Añadir el panel central al JFrame
         this.add(panelCentral, BorderLayout.CENTER);
-
+        
+       
         this.setVisible(true);
     }
 
