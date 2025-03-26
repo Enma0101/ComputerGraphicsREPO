@@ -9,8 +9,8 @@ import main.Main;
 
 public class GarageView extends JFrame implements MouseListener {
 
-    String ColorPrincipal = "200, 204, 206";
-    String Colorsecundario = "0, 161, 155";
+    String ColorPrincipal = "188, 24, 35";
+    String Colorsecundario = "255, 242, 0";
     String EquipoSeleccionado = "Ferrari";
     Color ColorMain = stringToColor(ColorPrincipal);
     Color ColorSen = stringToColor(Colorsecundario);
@@ -19,7 +19,7 @@ public class GarageView extends JFrame implements MouseListener {
 
     public GarageView() {
 
-        this.setSize(1200,800);
+        this.setSize(1200,750);
         this.setDefaultCloseOperation(EXIT_ON_CLOSE);
         this.getContentPane().setBackground(ColorMain);
         this.setResizable(false);
@@ -71,6 +71,11 @@ public class GarageView extends JFrame implements MouseListener {
         buttonModificar.setContentAreaFilled(false);
         buttonModificar.setOpaque(true);
         buttonModificar.setFocusable(false);
+        buttonModificar.setBorder(BorderFactory.createLineBorder(Color.BLACK, 10));  // El '3' es el grosor del borde
+     // También puedes usar un color diferente para el borde, por ejemplo, rojo
+     buttonModificar.setBorder(BorderFactory.createLineBorder(Color.RED,10));
+        
+        
         buttonModificar.setBorder(BorderFactory.createLineBorder(Color.BLACK));
         buttonModificar.setBorder(BorderFactory.createCompoundBorder(
                 buttonModificar.getBorder(),
@@ -108,7 +113,6 @@ public class GarageView extends JFrame implements MouseListener {
 
         this.add(panelCentral, BorderLayout.CENTER);
 
-        // Panel de Estadísticas
         JPanel panelStats = new JPanel();
         panelStats.setLayout(new BoxLayout(panelStats, BoxLayout.Y_AXIS));
         panelStats.setBackground(ColorMain);
@@ -124,7 +128,7 @@ public class GarageView extends JFrame implements MouseListener {
         Font fontStats = Main.GLOBAL_FONT2;
         stad.setFont(fontStats);
         stad.setForeground(Color.white);
-        stad.setAlignmentX(Component.LEFT_ALIGNMENT);  // Alineación de las etiquetas hacia la izquierda
+        stad.setAlignmentX(Component.LEFT_ALIGNMENT);
         Agarre.setFont(fontStats);
         Agarre.setForeground(Color.white);
         Agarre.setAlignmentX(Component.LEFT_ALIGNMENT);
@@ -140,7 +144,7 @@ public class GarageView extends JFrame implements MouseListener {
 
         // Agregamos las etiquetas al panel
         panelStats.add(stad);
-        panelStats.add(Box.createVerticalStrut(30));  // Espacio entre las etiquetas
+        panelStats.add(Box.createVerticalStrut(30));
         panelStats.add(Agarre);
         panelStats.add(Box.createVerticalStrut(20));
         panelStats.add(VelocidadMAX);
@@ -148,6 +152,21 @@ public class GarageView extends JFrame implements MouseListener {
         panelStats.add(Potencia);
         panelStats.add(Box.createVerticalStrut(20));
         panelStats.add(Peso);
+        panelStats.add(Box.createVerticalStrut(40)); // Espacio antes del logo
+
+        // Imagen del logo
+        JLabel logoLabel = new JLabel();
+        URL logoUrl = getClass().getResource("/resources/Imagens/Ferrari/ferrari-logo.png");
+
+        if (logoUrl != null) {
+            ImageIcon logoIcon = new ImageIcon(logoUrl);
+            Image logoImage = logoIcon.getImage().getScaledInstance(150, 150, Image.SCALE_SMOOTH); // Ajusta el tamaño
+            logoLabel.setIcon(new ImageIcon(logoImage));
+            logoLabel.setAlignmentX(Component.LEFT_ALIGNMENT);
+            panelStats.add(logoLabel);
+        } else {
+            System.out.println("Logo no encontrado en la ruta: " + logoUrl);
+        }
 
         // Ajustamos el layout del panel central
         panelCentral.setLayout(new BorderLayout());
