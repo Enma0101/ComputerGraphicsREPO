@@ -1,10 +1,14 @@
 package ui;
 
 import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
+import java.awt.image.BufferedImage;
 import java.net.URL;
 import javax.swing.*;
+
 import main.Main;
 
 public class GarageView extends JFrame implements MouseListener {
@@ -14,39 +18,126 @@ public class GarageView extends JFrame implements MouseListener {
     String EquipoSeleccionado = "Ferrari";
     Color ColorMain = stringToColor(ColorPrincipal);
     Color ColorSen = stringToColor(Colorsecundario);
+    
     JLabel label, label2, Agarre, VelocidadMAX, Potencia, Peso, stad;
     JButton buttonBack, buttonModificar;
 
-    public GarageView() {
+    // Door animation components
+    private JLabel panelPuerta;
+    private int puertaY = 0; 
+    private Timer animationTimer;
 
-        this.setSize(1200,750);
+    public GarageView() {
+        // Panel de contenido personalizado con patrón de fibra de carbono
+        JPanel contentPanelWithTexture = new JPanel() {
+            @Override
+            protected void paintComponent(Graphics g) {
+                super.paintComponent(g);
+                Graphics2D g2d = (Graphics2D) g;
+                
+                // Crear imagen de fondo con patrón de fibra de carbono
+                BufferedImage backgroundTexture = createCarbonFiberTexture(getWidth(), getHeight());
+                g2d.drawImage(backgroundTexture, 0, 0, this);
+            }
+        };
+        contentPanelWithTexture.setLayout(new BorderLayout());
+        
+        // Establecer el panel de contenido personalizado
+        setContentPane(contentPanelWithTexture);
+        
+        this.setSize(1200, 750);
         this.setDefaultCloseOperation(EXIT_ON_CLOSE);
-        this.getContentPane().setBackground(ColorMain);
         this.setResizable(false);
         this.setLocationRelativeTo(null);
-        this.setResizable(true); 
-        this.setLayout(new BorderLayout());
 
-        // Panel Título (Encabezado)
+        panelPuerta = new JLabel();
+        panelPuerta.setBounds(0, puertaY, 1200, 750);
+        
+        URL doorImageUrl = getClass().getResource("/resources/Imagens/garage-door.jpg");
+        if (doorImageUrl != null) {
+            ImageIcon doorIcon = new ImageIcon(doorImageUrl);
+            Image doorImage = doorIcon.getImage().getScaledInstance(1200, 750, Image.SCALE_SMOOTH);
+            panelPuerta.setIcon(new ImageIcon(doorImage));
+        } else {
+            panelPuerta.setBackground(Color.DARK_GRAY);
+            panelPuerta.setOpaque(true);
+        }
+        
+        contentPanelWithTexture.add(panelPuerta, BorderLayout.CENTER);
+    
+        initGarageComponents(contentPanelWithTexture);
+
+        startDoorAnimation();
+    }
+
+    private BufferedImage createCarbonFiberTexture(int width, int height) {
+        BufferedImage texture = new BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB);
+        Graphics2D g2d = texture.createGraphics();
+        
+        // Color base ligeramente más oscuro derivado del color principal
+        Color baseColor = new Color(
+            Math.max(0, ColorMain.getRed() - 50), 
+            Math.max(0, ColorMain.getGreen() - 50), 
+            Math.max(0, ColorMain.getBlue() - 50)
+        );
+        
+        // Color de las líneas
+        Color lineColor = new Color(
+            Math.max(0, baseColor.getRed() - 30), 
+            Math.max(0, baseColor.getGreen() - 30), 
+            Math.max(0, baseColor.getBlue() - 30)
+        );
+        
+        // Fondo base
+        g2d.setColor(baseColor);
+        g2d.fillRect(0, 0, width, height);
+        
+        // Parámetros del patrón de fibra de carbono
+        int lineSpacing = 5;
+        int lineWidth = 2;
+        
+        g2d.setColor(lineColor);
+        
+        // Dibujar líneas diagonales para efecto de fibra de carbono
+        for (int y = 0; y < height; y += lineSpacing) {
+            // Líneas en un ángulo
+            g2d.drawLine(0, y, width, y - height);
+            g2d.drawLine(0, y + lineWidth, width, y - height + lineWidth);
+            
+            // Líneas en el ángulo opuesto
+            g2d.drawLine(0, y, width, y + height);
+            g2d.drawLine(0, y + lineWidth, width, y + height + lineWidth);
+        }
+        
+        // Añadir un ligero efecto de transparencia
+        AlphaComposite alphaComposite = AlphaComposite.getInstance(AlphaComposite.SRC_OVER, 0.6f);
+        g2d.setComposite(alphaComposite);
+        
+        g2d.dispose();
+        return texture;
+    }
+    
+    private void initGarageComponents(JPanel parentPanel) {
+        // Crear paneles con fondo transparente
         JPanel panelTitulo = new JPanel(new FlowLayout(FlowLayout.CENTER));
-        panelTitulo.setBackground(ColorMain);
-        panelTitulo.setBorder(BorderFactory.createEmptyBorder(50, 0, 20, 0));  // Separación del borde superior
+        panelTitulo.setOpaque(false);
+        panelTitulo.setBorder(BorderFactory.createEmptyBorder(50, 0, 20, 0));
 
-        label = new JLabel("Garage  Team  " + EquipoSeleccionado);
+        label = new JLabel("Garage " + EquipoSeleccionado);
         label.setForeground(ColorSen);
         label.setFont(Main.GLOBAL_FONT);
         panelTitulo.add(label);
-        this.add(panelTitulo, BorderLayout.NORTH);
+        parentPanel.add(panelTitulo, BorderLayout.NORTH);
 
-        // Panel de Botones
+        // Panel de botones
         JPanel panelBotones = new JPanel(new GridBagLayout());
-        panelBotones.setBackground(ColorMain);
+        panelBotones.setOpaque(false);
 
         GridBagConstraints gbc = new GridBagConstraints();
         gbc.fill = GridBagConstraints.HORIZONTAL;
         gbc.insets = new Insets(10, 200, 40, 200); 
         
-        // Botón "Back"
+        // Botón Back
         buttonBack = new JButton("Back menu principal");
         buttonBack.setBackground(ColorSen);
         buttonBack.setForeground(ColorMain);
@@ -55,14 +146,14 @@ public class GarageView extends JFrame implements MouseListener {
         buttonBack.setContentAreaFilled(false);
         buttonBack.setOpaque(true);
         buttonBack.setFocusable(false);
-        buttonBack.setBorder(BorderFactory.createLineBorder(Color.BLACK));
+        buttonBack.setBorder(BorderFactory.createLineBorder(Color.BLACK, 4));
         buttonBack.setBorder(BorderFactory.createCompoundBorder(
                 buttonBack.getBorder(),
                 BorderFactory.createEmptyBorder(10, 20, 10, 20)
         ));
         buttonBack.addMouseListener(this);
 
-        // Botón "Modificar Auto"
+        // Botón Modificar
         buttonModificar = new JButton("Modificar Auto");
         buttonModificar.setBackground(ColorSen);
         buttonModificar.setForeground(ColorMain);
@@ -71,12 +162,7 @@ public class GarageView extends JFrame implements MouseListener {
         buttonModificar.setContentAreaFilled(false);
         buttonModificar.setOpaque(true);
         buttonModificar.setFocusable(false);
-        buttonModificar.setBorder(BorderFactory.createLineBorder(Color.BLACK, 10));  // El '3' es el grosor del borde
-     // También puedes usar un color diferente para el borde, por ejemplo, rojo
-     buttonModificar.setBorder(BorderFactory.createLineBorder(Color.RED,10));
-        
-        
-        buttonModificar.setBorder(BorderFactory.createLineBorder(Color.BLACK));
+        buttonModificar.setBorder(BorderFactory.createLineBorder(Color.BLACK, 4));
         buttonModificar.setBorder(BorderFactory.createCompoundBorder(
                 buttonModificar.getBorder(),
                 BorderFactory.createEmptyBorder(10, 20, 10, 20)
@@ -91,32 +177,30 @@ public class GarageView extends JFrame implements MouseListener {
         gbc.gridy = 0;
         panelBotones.add(buttonModificar, gbc);
 
-        this.add(panelBotones, BorderLayout.SOUTH);
+        parentPanel.add(panelBotones, BorderLayout.SOUTH);
 
         // Panel Central
         JPanel panelCentral = new JPanel();
-        panelCentral.setLayout(new BoxLayout(panelCentral, BoxLayout.Y_AXIS));  
-        panelCentral.setBackground(ColorMain);
+        panelCentral.setLayout(new BorderLayout());
+        panelCentral.setOpaque(false);
+        panelCentral.setBorder(BorderFactory.createEmptyBorder(0, 0, 0, 0)); // Reducir espaciado superior
 
-        // Imagen del auto
         label2 = new JLabel();
-        URL imageUrl = getClass().getResource("/resources/Imagens/" + "Ferrari" + "/Ferrari_Car.jpg");
+        URL imageUrl = getClass().getResource("/resources/Imagens/" + EquipoSeleccionado + "/Car.png");
         ImageIcon imageIcon = new ImageIcon(imageUrl);
         Image image = imageIcon.getImage();
-        Image scaledImage = image.getScaledInstance(500, 400, Image.SCALE_SMOOTH);
+        Image scaledImage = image.getScaledInstance(650, 500, Image.SCALE_SMOOTH);
         label2.setIcon(new ImageIcon(scaledImage));
+        label2.setBorder(BorderFactory.createEmptyBorder(0, 0, 70, 0));
+        label2.setHorizontalAlignment(JLabel.CENTER);
+  
 
-        label2.setAlignmentX(Component.CENTER_ALIGNMENT);
-        panelCentral.add(Box.createVerticalGlue());
-        panelCentral.add(label2);
-        panelCentral.add(Box.createVerticalGlue());
-
-        this.add(panelCentral, BorderLayout.CENTER);
-
+        // Panel de Estadísticas
         JPanel panelStats = new JPanel();
         panelStats.setLayout(new BoxLayout(panelStats, BoxLayout.Y_AXIS));
-        panelStats.setBackground(ColorMain);
-        panelStats.setBorder(BorderFactory.createEmptyBorder(100, 100, 0, 50)); // Ajustamos los márgenes
+        panelStats.setOpaque(false);
+        panelStats.setBorder(BorderFactory.createEmptyBorder(80, 0, 0, 50)); 
+        
 
         stad = new JLabel("      ESTADISTICAS - VEHICULO ");
         Agarre = new JLabel("      Agarre :       Excelente");
@@ -124,25 +208,18 @@ public class GarageView extends JFrame implements MouseListener {
         Potencia = new JLabel("      Potencia :     1000 HP");
         Peso = new JLabel("       Peso : 	       740 kg");
 
-        // Fuente para las estadísticas
         Font fontStats = Main.GLOBAL_FONT2;
         stad.setFont(fontStats);
         stad.setForeground(Color.white);
-        stad.setAlignmentX(Component.LEFT_ALIGNMENT);
         Agarre.setFont(fontStats);
         Agarre.setForeground(Color.white);
-        Agarre.setAlignmentX(Component.LEFT_ALIGNMENT);
         VelocidadMAX.setFont(fontStats);
         VelocidadMAX.setForeground(Color.white);
-        VelocidadMAX.setAlignmentX(Component.LEFT_ALIGNMENT);
         Potencia.setFont(fontStats);
         Potencia.setForeground(Color.white);
-        Potencia.setAlignmentX(Component.LEFT_ALIGNMENT);
         Peso.setFont(fontStats);
         Peso.setForeground(Color.white);
-        Peso.setAlignmentX(Component.LEFT_ALIGNMENT);
 
-        // Agregamos las etiquetas al panel
         panelStats.add(stad);
         panelStats.add(Box.createVerticalStrut(30));
         panelStats.add(Agarre);
@@ -152,28 +229,51 @@ public class GarageView extends JFrame implements MouseListener {
         panelStats.add(Potencia);
         panelStats.add(Box.createVerticalStrut(20));
         panelStats.add(Peso);
-        panelStats.add(Box.createVerticalStrut(40)); // Espacio antes del logo
 
-        // Imagen del logo
+        
+     // Ajusta estos parámetros en la sección de inicialización del logo
         JLabel logoLabel = new JLabel();
-        URL logoUrl = getClass().getResource("/resources/Imagens/Ferrari/ferrari-logo.png");
+        URL logoUrl = getClass().getResource("/resources/Imagens/"+ EquipoSeleccionado  + "/logo.png");
 
         if (logoUrl != null) {
             ImageIcon logoIcon = new ImageIcon(logoUrl);
-            Image logoImage = logoIcon.getImage().getScaledInstance(150, 150, Image.SCALE_SMOOTH); // Ajusta el tamaño
+            Image logoImage = logoIcon.getImage().getScaledInstance(250, 150, Image.SCALE_SMOOTH);
             logoLabel.setIcon(new ImageIcon(logoImage));
-            logoLabel.setAlignmentX(Component.LEFT_ALIGNMENT);
-            panelStats.add(logoLabel);
-        } else {
-            System.out.println("Logo no encontrado en la ruta: " + logoUrl);
+            
+            // Configura márgenes más ajustados
+            logoLabel.setBorder(BorderFactory.createEmptyBorder(50, 100, 0, 0));
+    
         }
+        
+    
+     
+        panelStats.add(logoLabel);
 
-        // Ajustamos el layout del panel central
-        panelCentral.setLayout(new BorderLayout());
+  
+
         panelCentral.add(panelStats, BorderLayout.WEST);
         panelCentral.add(label2, BorderLayout.CENTER);
+        
+
+        parentPanel.add(panelCentral, BorderLayout.CENTER);
 
         this.setVisible(true);
+    }
+   
+    private void startDoorAnimation() {
+        animationTimer = new Timer(10, new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                if (puertaY > -750) { 
+                    puertaY -= 5; 
+                    panelPuerta.setBounds(0, puertaY, 1200, 750);
+                    panelPuerta.repaint();
+                } else {
+                    animationTimer.stop(); 
+                }
+            }
+        });
+        animationTimer.start();
     }
 
     private Color stringToColor(String rgb) {
