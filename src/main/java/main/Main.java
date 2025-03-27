@@ -38,17 +38,8 @@ public class Main {
 	            GLOBAL_FONT2 = GLOBAL_FONT.deriveFont(16f);
 	        }
 	    }
-	static GarageView frame;
+
 	
 	
-	public static void main(String[] args) {
-		
-		
-		
-		
-		frame = new	GarageView();
-		frame.setVisible(true);
-		
-		
-	}
+
 }
