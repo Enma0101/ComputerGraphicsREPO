@@ -82,7 +82,14 @@ public class MenuPrincipal extends JFrame {
     }
     
     private void setupButtonActions(JButton[] buttons) {
-        // Botón GARAGE
+    	
+    	buttons[0].addActionListener(e -> {
+    	    SwingUtilities.invokeLater(() -> {
+    	        openCircuitoF1();
+    	    });
+    	});
+    	
+    	// Botón GARAGE
         buttons[1].addActionListener(e -> {
             
             SwingUtilities.invokeLater(() -> {
@@ -142,6 +149,15 @@ public class MenuPrincipal extends JFrame {
         dialog.setVisible(true);
     }
     
+    private void openCircuitoF1() {
+    	CircuitoF1 circuitoF1 = new CircuitoF1();
+        JDialog dialog = new JDialog((JFrame) SwingUtilities.getWindowAncestor(this), "Carrera", true);
+        dialog.setContentPane(circuitoF1);
+        dialog.setSize(1200, 750);
+        dialog.setLocationRelativeTo(this);
+        dialog.setUndecorated(true);
+        dialog.setVisible(true);
+    }
     
     public static void main(String[] args) {
         SwingUtilities.invokeLater(() -> {
