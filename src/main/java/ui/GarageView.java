@@ -1,10 +1,9 @@
 package ui;
 
 import java.awt.*;
-
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
-
+import java.net.URL;
 import javax.swing.*;
 import main.Main;
 
@@ -15,41 +14,43 @@ public class GarageView extends JFrame implements MouseListener {
     String EquipoSeleccionado = "Ferrari";
     Color ColorMain = stringToColor(ColorPrincipal);
     Color ColorSen = stringToColor(Colorsecundario);
-    JLabel label;
+    JLabel label, label2, Agarre, VelocidadMAX, Potencia, Peso, stad;
     JButton buttonBack, buttonModificar;
 
-    public GarageView() {
+    public GarageView(String EquipoSeleccionado) {
 
-        this.setExtendedState(JFrame.MAXIMIZED_BOTH);
+        this.setSize(1200,750);
         this.setDefaultCloseOperation(EXIT_ON_CLOSE);
         this.getContentPane().setBackground(ColorMain);
-        this.setResizable(true); // Cambiar a 'true' para que la ventana sea redimensionable
+        this.setResizable(false);
+        this.setLocationRelativeTo(null);
+        this.setResizable(true); 
         this.setLayout(new BorderLayout());
 
-        // Panel de título
+        // Panel Título (Encabezado)
         JPanel panelTitulo = new JPanel(new FlowLayout(FlowLayout.CENTER));
         panelTitulo.setBackground(ColorMain);
+        panelTitulo.setBorder(BorderFactory.createEmptyBorder(50, 0, 20, 0));  // Separación del borde superior
 
-        label = new JLabel("Garage - Team - " + EquipoSeleccionado);
+        label = new JLabel("Garage  Team  " + EquipoSeleccionado);
         label.setForeground(ColorSen);
         label.setFont(Main.GLOBAL_FONT);
         panelTitulo.add(label);
         this.add(panelTitulo, BorderLayout.NORTH);
 
-        // Panel de botones (modificado para GridBagLayout)
+        // Panel de Botones
         JPanel panelBotones = new JPanel(new GridBagLayout());
         panelBotones.setBackground(ColorMain);
 
-        // Establecer restricciones para los botones
         GridBagConstraints gbc = new GridBagConstraints();
         gbc.fill = GridBagConstraints.HORIZONTAL;
-        gbc.insets = new Insets(10, 500,40, 500); // Margen entre los botones
-
-        // Botón "Back menu principal"
+        gbc.insets = new Insets(10, 200, 40, 200); 
+        
+        // Botón "Back"
         buttonBack = new JButton("Back menu principal");
         buttonBack.setBackground(ColorSen);
         buttonBack.setForeground(ColorMain);
-        buttonBack.setFont(Main.GLOBAL_FONT_botton);
+        buttonBack.setFont(Main.GLOBAL_FONT2);
         buttonBack.setFocusPainted(false);
         buttonBack.setContentAreaFilled(false);
         buttonBack.setOpaque(true);
@@ -65,7 +66,7 @@ public class GarageView extends JFrame implements MouseListener {
         buttonModificar = new JButton("Modificar Auto");
         buttonModificar.setBackground(ColorSen);
         buttonModificar.setForeground(ColorMain);
-        buttonModificar.setFont(Main.GLOBAL_FONT_botton);
+        buttonModificar.setFont(Main.GLOBAL_FONT2);
         buttonModificar.setFocusPainted(false);
         buttonModificar.setContentAreaFilled(false);
         buttonModificar.setOpaque(true);
@@ -77,7 +78,6 @@ public class GarageView extends JFrame implements MouseListener {
         ));
         buttonModificar.addMouseListener(this);
 
-        // Añadir los botones a la cuadrícula con restricciones
         gbc.gridx = 1;
         gbc.gridy = 0;
         panelBotones.add(buttonBack, gbc);
@@ -88,18 +88,71 @@ public class GarageView extends JFrame implements MouseListener {
 
         this.add(panelBotones, BorderLayout.SOUTH);
 
-        // Panel Central con margen
+        // Panel Central
         JPanel panelCentral = new JPanel();
-        panelCentral.setLayout(new BorderLayout());
+        panelCentral.setLayout(new BoxLayout(panelCentral, BoxLayout.Y_AXIS));  
         panelCentral.setBackground(ColorMain);
-        panelCentral.setBorder(BorderFactory.createEmptyBorder(50, 300, 50, 300));  // Margen en el panel central
 
-        JPanel panelImagen = new JPanel();
-        panelImagen.setBackground(Color.darkGray);
-        panelImagen.setLayout(new BorderLayout());
-        panelCentral.add(panelImagen, BorderLayout.CENTER);
+        // Imagen del auto
+        label2 = new JLabel();
+        URL imageUrl = getClass().getResource("/resources/Imagens/" + "Ferrari" + "/Ferrari_Car.jpg");
+        ImageIcon imageIcon = new ImageIcon(imageUrl);
+        Image image = imageIcon.getImage();
+        Image scaledImage = image.getScaledInstance(500, 400, Image.SCALE_SMOOTH);
+        label2.setIcon(new ImageIcon(scaledImage));
+
+        label2.setAlignmentX(Component.CENTER_ALIGNMENT);
+        panelCentral.add(Box.createVerticalGlue());
+        panelCentral.add(label2);
+        panelCentral.add(Box.createVerticalGlue());
 
         this.add(panelCentral, BorderLayout.CENTER);
+
+        // Panel de Estadísticas
+        JPanel panelStats = new JPanel();
+        panelStats.setLayout(new BoxLayout(panelStats, BoxLayout.Y_AXIS));
+        panelStats.setBackground(ColorMain);
+        panelStats.setBorder(BorderFactory.createEmptyBorder(100, 100, 0, 50)); // Ajustamos los márgenes
+
+        stad = new JLabel("      ESTADISTICAS - VEHICULO ");
+        Agarre = new JLabel("      Agarre :       Excelente");
+        VelocidadMAX = new JLabel("    Velocidad Max :  350 km/h");
+        Potencia = new JLabel("      Potencia :     1000 HP");
+        Peso = new JLabel("       Peso : 	       740 kg");
+
+        // Fuente para las estadísticas
+        Font fontStats = Main.GLOBAL_FONT2;
+        stad.setFont(fontStats);
+        stad.setForeground(Color.white);
+        stad.setAlignmentX(Component.LEFT_ALIGNMENT);  // Alineación de las etiquetas hacia la izquierda
+        Agarre.setFont(fontStats);
+        Agarre.setForeground(Color.white);
+        Agarre.setAlignmentX(Component.LEFT_ALIGNMENT);
+        VelocidadMAX.setFont(fontStats);
+        VelocidadMAX.setForeground(Color.white);
+        VelocidadMAX.setAlignmentX(Component.LEFT_ALIGNMENT);
+        Potencia.setFont(fontStats);
+        Potencia.setForeground(Color.white);
+        Potencia.setAlignmentX(Component.LEFT_ALIGNMENT);
+        Peso.setFont(fontStats);
+        Peso.setForeground(Color.white);
+        Peso.setAlignmentX(Component.LEFT_ALIGNMENT);
+
+        // Agregamos las etiquetas al panel
+        panelStats.add(stad);
+        panelStats.add(Box.createVerticalStrut(30));  // Espacio entre las etiquetas
+        panelStats.add(Agarre);
+        panelStats.add(Box.createVerticalStrut(20));
+        panelStats.add(VelocidadMAX);
+        panelStats.add(Box.createVerticalStrut(20));
+        panelStats.add(Potencia);
+        panelStats.add(Box.createVerticalStrut(20));
+        panelStats.add(Peso);
+
+        // Ajustamos el layout del panel central
+        panelCentral.setLayout(new BorderLayout());
+        panelCentral.add(panelStats, BorderLayout.WEST);
+        panelCentral.add(label2, BorderLayout.CENTER);
 
         this.setVisible(true);
     }
@@ -138,11 +191,11 @@ public class GarageView extends JFrame implements MouseListener {
     @Override
     public void mouseEntered(MouseEvent e) {
         if (e.getSource() == buttonBack) {
-            buttonBack.setFont(new Font(buttonBack.getFont().getName(), Font.BOLD, 30));
-            buttonBack.setPreferredSize(new Dimension(300, 50));
+            buttonBack.setFont(new Font(buttonBack.getFont().getName(), Font.BOLD, 20));
+            buttonBack.setPreferredSize(new Dimension(200, 50));
         } else if (e.getSource() == buttonModificar) {
-            buttonModificar.setFont(new Font(buttonModificar.getFont().getName(), Font.BOLD, 30));
-            buttonModificar.setPreferredSize(new Dimension(300, 50));
+            buttonModificar.setFont(new Font(buttonModificar.getFont().getName(), Font.BOLD, 20));
+            buttonModificar.setPreferredSize(new Dimension(200, 50));
         }
         e.getComponent().revalidate();
         e.getComponent().repaint();
@@ -151,10 +204,10 @@ public class GarageView extends JFrame implements MouseListener {
     @Override
     public void mouseExited(MouseEvent e) {
         if (e.getSource() == buttonBack) {
-            buttonBack.setFont(new Font(buttonBack.getFont().getName(), Font.BOLD, 20));
+            buttonBack.setFont(new Font(buttonBack.getFont().getName(), Font.BOLD, 16));
             buttonBack.setPreferredSize(new Dimension(250, 50));
         } else if (e.getSource() == buttonModificar) {
-            buttonModificar.setFont(new Font(buttonModificar.getFont().getName(), Font.BOLD, 20));
+            buttonModificar.setFont(new Font(buttonModificar.getFont().getName(), Font.BOLD, 16));
             buttonModificar.setPreferredSize(new Dimension(250, 50));
         }
         e.getComponent().revalidate();

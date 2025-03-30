@@ -24,11 +24,18 @@ import javax.swing.border.CompoundBorder;
 import javax.swing.border.EmptyBorder;
 import javax.swing.border.LineBorder;
 
+import database.UsuarioDAO;
+
 //Opciones del juego.
 
 public class MenuPrincipal extends JFrame {
-
-    public MenuPrincipal() {
+	private String username;
+	private UsuarioDAO usuarioDAO;
+	
+    public MenuPrincipal(String username) {
+    	this.username = username;
+    	this.usuarioDAO = new UsuarioDAO();
+    	
         // Configuración de la ventana
         this.setExtendedState(JFrame.MAXIMIZED_BOTH);
         this.setDefaultCloseOperation(EXIT_ON_CLOSE);
@@ -58,37 +65,45 @@ public class MenuPrincipal extends JFrame {
         titleLabel.setBorder(new EmptyBorder(50, 0, 50, 0));
         titleLabel.setHorizontalAlignment(SwingConstants.CENTER); // Constante para alinear en centro puq no deja
         
-        // Botones
-        JButton[] buttons = {
-            createMenuButton("CARRERA"),
-            createMenuButton("GARAGE"),
-            createMenuButton("HISTORIAL"),
-            createMenuButton("CONFIGURACIÓN"),
-            createMenuButton("SALIR")
-        };
+        // Botones 
+        JButton carreraButton = createMenuButton("CARRERA");
+        JButton garageButton = createMenuButton("GARAGE");
+        JButton historialButton = createMenuButton("HISTORIAL");
+        JButton configButton = createMenuButton("CONFIGURACIÓN");
+        JButton salirButton = createMenuButton("SALIR");
         
-        // Añadir componentes
+
+        // Abrir el garage con el equipo del usuario
+        garageButton.addActionListener(e -> {
+            String equipo = usuarioDAO.obtenerEquipoUsuario(username);
+            if (equipo != null && !equipo.isEmpty()) {
+                new GarageView(equipo).setVisible(true);
+            } else {
+                JOptionPane.showMessageDialog(this, "No tienes un equipo asignado.", "Error", JOptionPane.ERROR_MESSAGE);
+            }
+        });
+        
+        // Acción para salir
+        salirButton.addActionListener(e -> System.exit(0));
+        
+        // Componentes
         mainPanel.add(titleLabel);
-        for (JButton button : buttons) {
-            mainPanel.add(button);
-            mainPanel.add(Box.createRigidArea(new Dimension(0, 20)));
-        }
+        mainPanel.add(carreraButton);
+        mainPanel.add(Box.createRigidArea(new Dimension(0, 20)));
+        mainPanel.add(garageButton);
+        mainPanel.add(Box.createRigidArea(new Dimension(0, 20)));
+        mainPanel.add(historialButton);
+        mainPanel.add(Box.createRigidArea(new Dimension(0, 20)));
+        mainPanel.add(configButton);
+        mainPanel.add(Box.createRigidArea(new Dimension(0, 20)));
+        mainPanel.add(salirButton);
         
         this.add(mainPanel, BorderLayout.CENTER);
     }
     
-    // Estilo de los botones
-    private JButton createMenuButton(String text) {
-        JButton button = new JButton(text) {
-            @Override
-            protected void paintComponent(Graphics g) {
-                Graphics2D g2d = (Graphics2D) g;
-                g2d.setPaint(new GradientPaint(0, 0, new Color(50, 50, 50), getWidth(), getHeight(), new Color(20, 20, 20)));
-                g2d.fillRoundRect(0, 0, getWidth(), getHeight(), 30, 30);
-                super.paintComponent(g);
-            }
-        };
-        
+    	// Estilo de los botones
+    	private JButton createMenuButton(String text) {
+        JButton button = new JButton(text);
         button.setFont(new Font("Press Start 2P", Font.PLAIN, 24));
         button.setForeground(Color.WHITE);
         button.setBorder(new LineBorder(new Color(200, 0, 0), 4, true));
@@ -98,10 +113,9 @@ public class MenuPrincipal extends JFrame {
         button.setFocusPainted(false);
         button.setOpaque(false);
         
-        // Efecto hover
         button.addMouseListener(new MouseAdapter() {
             public void mouseEntered(MouseEvent e) {
-                button.setForeground(new Color(255, 215, 0)); // Dorado
+                button.setForeground(new Color(255, 215, 0));
                 button.setBorder(new LineBorder(new Color(255, 215, 0), 4, true));
             }
             public void mouseExited(MouseEvent e) {
