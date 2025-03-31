@@ -12,7 +12,9 @@ import java.io.InputStream;
 public class Main {
 	
 	   public static Font GLOBAL_FONT;
-	    public static Font GLOBAL_FONT2;
+	   public static Font GLOBAL_FONT2;
+	   public static Font Digital;
+	    
 
 	    static {
 	        try {
@@ -36,6 +38,30 @@ public class Main {
 	            e.printStackTrace();
 	            GLOBAL_FONT = new Font("SansSerif", Font.BOLD, 18); 
 	            GLOBAL_FONT2 = GLOBAL_FONT.deriveFont(16f);
+	        }
+	    }
+
+	    static {
+	        try {
+	            // Cargar la fuente desde el classpath de los recursos
+	            InputStream fontStream = Main.class.getResourceAsStream("/resources/Fonts/digital-7.ttf");
+	            if (fontStream == null) {
+	                throw new IOException("Fuente no encontrada en el classpath.");
+	            }
+	            
+	            // Crear la fuente desde el stream
+	            Digital = Font.createFont(Font.TRUETYPE_FONT, fontStream).deriveFont(25f);
+	            
+	            // Registrar la fuente
+	            GraphicsEnvironment ge = GraphicsEnvironment.getLocalGraphicsEnvironment();
+	            ge.registerFont(Digital);
+	            
+	          
+
+	        } catch (IOException | FontFormatException e) {
+	            e.printStackTrace();
+	            GLOBAL_FONT = new Font("SansSerif", Font.BOLD, 18); 
+	           
 	        }
 	    }
 

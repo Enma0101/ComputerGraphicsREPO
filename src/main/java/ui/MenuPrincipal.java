@@ -29,7 +29,7 @@ import main.Main;
 
 
 public class MenuPrincipal extends JFrame {
-
+	private JDialog dialog = null;
     public MenuPrincipal() {
         // Configuración de la ventana
     	this.setSize(1200,750);
@@ -94,12 +94,7 @@ public class MenuPrincipal extends JFrame {
     	
     	// Botón GARAGE
 
-        // Botón GARAGE
-    	 buttons[0].addActionListener(e -> {
-    	        SwingUtilities.invokeLater(() -> {
-    	            openCarreraView(); // Abre el panel de carrera
-    	        });
-    	    });
+       
     	 
 
         buttons[1].addActionListener(e -> {
@@ -152,35 +147,34 @@ public class MenuPrincipal extends JFrame {
     
     
     private void openGarageView() {
-    	GarageView garageView = new GarageView();
-        JDialog dialog = new JDialog((JFrame) SwingUtilities.getWindowAncestor(this), "Pit Stop", true);
-        dialog.setContentPane(garageView);
-        dialog.setSize(1200, 750);
-        dialog.setLocationRelativeTo(this);
-        dialog.setUndecorated(true);
-        dialog.setVisible(true);
+        if (dialog == null || !dialog.isVisible()) {
+            GarageView garageView = new GarageView();
+            dialog = new JDialog((JFrame) SwingUtilities.getWindowAncestor(this), "Pit Stop", true);
+            dialog.setContentPane(garageView);
+            dialog.setSize(1200, 750);
+            dialog.setLocationRelativeTo(this);
+            dialog.setUndecorated(true);
+            dialog.setVisible(true);
+        }
     }
-    
+
 
     private void openCircuitoF1() {
-    	CircuitoF1 circuitoF1 = new CircuitoF1();
+        CircuitoF1 circuitoF1 = new CircuitoF1();
         JDialog dialog = new JDialog((JFrame) SwingUtilities.getWindowAncestor(this), "Carrera", true);
         dialog.setContentPane(circuitoF1);
         dialog.setSize(1200, 750);
         dialog.setLocationRelativeTo(this);
         dialog.setUndecorated(true);
         dialog.setVisible(true);
+        dialog.addWindowListener(new java.awt.event.WindowAdapter() {
+            public void windowClosed(java.awt.event.WindowEvent windowEvent) {
+                // Esto asegura que el recurso de la ventana se libere después de cerrar.
+                dialog.dispose();
+            }
+        });
     }
 
-    private void openCarreraView() {
-        Carrera carreraPanel = new Carrera();
-        JDialog dialog = new JDialog(this, "Carrera", false); // No modal (permite interactuar con otros elementos)
-        dialog.setContentPane(carreraPanel);
-        dialog.setSize(1200, 750);
-        dialog.setLocationRelativeTo(this);
-        dialog.setUndecorated(true); // Sin bordes (opcional)
-        dialog.setVisible(true);
-    }
 
     
 

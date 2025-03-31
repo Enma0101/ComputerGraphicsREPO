@@ -5,15 +5,13 @@ import java.awt.Color;
 import java.awt.Graphics2D;
 import java.awt.RenderingHints;
 import java.awt.geom.AffineTransform;
-import java.awt.geom.Area;
 import java.awt.geom.Path2D;
 import java.awt.geom.Point2D;
-import java.awt.image.BufferedImage;
-import java.io.File;
-import java.io.IOException;
+
 import java.util.ArrayList;
 import java.util.List;
-import javax.imageio.ImageIO;
+
+import ui.CircuitoF1;
 
 public class CocheF1 {
     // Posición y propiedades físicas
@@ -25,65 +23,138 @@ public class CocheF1 {
     private double friccion;
     private double maniobrabilidad;
     private boolean frenando;
-    
+    private boolean acelerando;
+    private int contadorAceleracion;
+    private double aceleracionInicial;
+    private double ultimaXValida, ultimaYValida;
+    private double ultimoAnguloValido;
+    private double inicioX, inicioY;
+    private Color colorPrincipal = new Color(188, 24, 35);
+    private Color colorSecundario;
+    private Color colorDetalles;
+   private CircuitoF1 pista;
+   private int  Vueltas;
+  
+  
     // Tamaño del coche
     private int ancho;
     private int alto;
     
     // Colores
-    private Color colorPrincipal;
-    private Color colorSecundario;
+  
     
     // Lista de puntos para la detección de colisiones
     private List<Point2D> puntosColision;
     
     // Para detectar si el coche está en la pista
     private boolean enPista;
+    private boolean enPits;
     
-    // Imagen del coche (opcional)
-    private BufferedImage imagen;
 
-    public CocheF1(double x, double y) {
+    public CocheF1(double x, double y, CircuitoF1 pista ) {
         this.x = x;
         this.y = y;
+        this.inicioX = x;
+        this.inicioY = y;
         this.velocidad = 0;
         this.angulo = 0;
-        this.aceleracion = 0.2;
-        this.velocidadMaxima = 7.0;
-        this.friccion = 0.95;
-        this.maniobrabilidad = 0.05;
+        this.aceleracionInicial = 0.1; // 
+        this.aceleracion = aceleracionInicial;
+        this.velocidadMaxima = 8; 
+        this.friccion = 0.975; // 
+        this.maniobrabilidad = 0.09; // 
         this.frenando = false;
-        this.ancho = 20;
-        this.alto = 40;
-        this.colorPrincipal = Color.RED;
+        this.acelerando = false;
+        this.contadorAceleracion = 0;
+        this.ancho = 24;
+        this.alto = 45;
+        this.colorPrincipal = colorPrincipal;
         this.colorSecundario = Color.BLACK;
+        this.colorDetalles = Color.WHITE;
         this.puntosColision = new ArrayList<>();
         this.enPista = true;
-        
-        // Intentar cargar la imagen si existe
-        try {
-            this.imagen = ImageIO.read(new File("coche_f1.png"));
-        } catch (IOException e) {
-            this.imagen = null;
-            System.out.println("Usando gráficos vectoriales para el coche");
-        }
+        this.enPits = false;
+        this.x = x;
+        this.y = y;
+        this.pista = pista;
+        this.ultimaXValida = x;
+        this.ultimaYValida = y;
+        this.ultimoAnguloValido = 0;
+      
     }
     
     public void actualizar() {
-        // Aplicar aceleración o frenado
-        if (frenando) {
-            velocidad *= 0.9; // Frenado más intenso
+        // Guardar la posición válida actual antes de mover
+        if (enPista) {
+            ultimaXValida = x;
+            ultimaYValida = y;
+            ultimoAnguloValido = angulo;
         }
         
-        // Aplicar fricción natural
-        velocidad *= friccion;
+       
         
-        // Actualizar posición basada en velocidad y ángulo
-        x += Math.sin(angulo) * velocidad;
-        y -= Math.cos(angulo) * velocidad;
+        if (acelerando) {
+            contadorAceleracion++;
+            // Mejora de la aceleración inicial y progresiva
+            double factorAceleracion = Math.min(1.5 + (contadorAceleracion / 60.0), 8); // Aumentado de 1.0 a 1.5 y reducido de 60 a 50
+            velocidad = Math.min(velocidad + (aceleracion * factorAceleracion), velocidadMaxima);
+        } else {
+            // Mantener parte de la aceleración ganada
+            contadorAceleracion = Math.max(0, contadorAceleracion - 5); // Desacelera gradualmente
+        }
+        
+        // Aplicar frenado
+        if (frenando) {
+            velocidad *= 0.85; // Frenado más intenso (de 0.9 a 0.85)
+        }
+        // Verificar si está en pits
+        Point2D posicionActual = new Point2D.Double(x, y);
+        
+        
+        // Aplicar fricción natural o reducción en los pits
+        if (enPits) {
+            // En pits, limitar la velocidad a un máximo
+            double velocidadMaximaPits = 4.5; // Un poco mayor que antes (4.0)
+            if (velocidad > velocidadMaximaPits) {
+                velocidad = Math.max(velocidadMaximaPits, velocidad * 0.95);
+            }
+        } else {
+            // Fricción normal
+            velocidad *= friccion;
+        }
+        
+        // Calcular la nueva posición basada en velocidad y ángulo
+        double nuevaX = x + Math.sin(angulo) * velocidad;
+        double nuevaY = y - Math.cos(angulo) * velocidad;
+        
+        // Crear un punto para la nueva posición
+        Point2D nuevaPosicion = new Point2D.Double(nuevaX, nuevaY);
+        
+        // Verificar si la nueva posición está en la pista
+        boolean enNuevaPista = pista.estaEnPista(nuevaPosicion);
+        
+        // Solo actualizar posición si está en pista o en pits
+        if (enNuevaPista) {
+            x = nuevaX;
+            y = nuevaY;
+            enPista = enNuevaPista;
+        } else {
+            System.out.print("Ouch chocaste");
+            respawn();
+        }
         
         // Actualizar puntos de colisión
         actualizarPuntosColision();
+    }
+    
+    private void respawn() {
+        // Respawn en la última posición válida conocida
+        this.x = ultimaXValida;
+        this.y = ultimaYValida;
+        this.angulo = ultimoAnguloValido+180;
+        this.velocidad = 0;
+        this.aceleracion = aceleracionInicial;
+        this.contadorAceleracion = 0;
     }
     
     private void actualizarPuntosColision() {
@@ -95,15 +166,19 @@ public class CocheF1 {
         double izquierda = -ancho / 2.0;
         double derecha = ancho / 2.0;
         
-        // 8 puntos alrededor del coche
+        // 10 puntos alrededor del coche para mejor detección
         agregarPuntoTransformado(0, -frente); // Frente
-        agregarPuntoTransformado(derecha, -frente * 0.8); // Frente-derecha
+        agregarPuntoTransformado(derecha * 0.5, -frente * 0.9); // Frente-derecha
+        agregarPuntoTransformado(derecha, -frente * 0.6); // Derecha-frente
         agregarPuntoTransformado(derecha, 0); // Derecha
-        agregarPuntoTransformado(derecha, atras * 0.8); // Atrás-derecha
+        agregarPuntoTransformado(derecha, atras * 0.6); // Derecha-atrás
+        agregarPuntoTransformado(derecha * 0.5, atras * 0.9); // Atrás-derecha
         agregarPuntoTransformado(0, atras); // Atrás
-        agregarPuntoTransformado(izquierda, atras * 0.8); // Atrás-izquierda
+        agregarPuntoTransformado(izquierda * 0.5, atras * 0.9); // Atrás-izquierda
+        agregarPuntoTransformado(izquierda, atras * 0.6); // Izquierda-atrás
         agregarPuntoTransformado(izquierda, 0); // Izquierda
-        agregarPuntoTransformado(izquierda, -frente * 0.8); // Frente-izquierda
+        agregarPuntoTransformado(izquierda, -frente * 0.6); // Izquierda-frente
+        agregarPuntoTransformado(izquierda * 0.5, -frente * 0.9); // Frente-izquierda
     }
     
     private void agregarPuntoTransformado(double dx, double dy) {
@@ -127,101 +202,123 @@ public class CocheF1 {
         g2d.translate(x, y);
         g2d.rotate(angulo);
         
-        if (imagen != null) {
-            // Dibujar usando la imagen
-            g2d.drawImage(imagen, -ancho/2, -alto/2, ancho, alto, null);
-        } else {
-            // Dibujar usando vectores
-            
-            // Cuerpo principal
-            g2d.setColor(colorPrincipal);
-            g2d.fillRect(-ancho/2, -alto/2, ancho, alto);
-            
-            // Cabina
-            g2d.setColor(colorSecundario);
-            g2d.fillOval(-ancho/3, -alto/4, (int) (ancho/1.5f), alto/3);
-            
-            // Alerón delantero
-            g2d.setColor(colorSecundario);
-            g2d.fillRect(-ancho/2, -alto/2 - 5, ancho, 5);
-            
-            // Alerón trasero
-            g2d.setColor(colorSecundario);
-            g2d.fillRect(-ancho/2, alto/2, ancho, 5);
-            
-            // Detalles adicionales
-            g2d.setColor(Color.DARK_GRAY);
-            g2d.fillRect(-ancho/2 - 2, -alto/3, 2, alto/4);
-            g2d.fillRect(ancho/2, -alto/3, 2, alto/4);
-        }
+        // Dibujar usando vectores - Diseño mejorado
+        
+        // Cuerpo principal con forma más aerodinámica
+        Path2D cuerpo = new Path2D.Double();
+        cuerpo.moveTo(-ancho/2, alto/3);
+        cuerpo.lineTo(-ancho/4, -alto/2); // Punta frontal
+        cuerpo.lineTo(ancho/4, -alto/2);
+        cuerpo.lineTo(ancho/2, alto/3);
+        cuerpo.lineTo(ancho/2, alto/2);
+        cuerpo.lineTo(-ancho/2, alto/2);
+        cuerpo.closePath();
+        
+        g2d.setColor(colorPrincipal);
+        g2d.fill(cuerpo);
+        g2d.setColor(Color.BLACK);
+        g2d.setStroke(new BasicStroke(1.0f));
+        g2d.draw(cuerpo);
+        
+        // Cabina del piloto (cockpit)
+        Path2D cabina = new Path2D.Double();
+        cabina.moveTo(-ancho/6, -alto/6);
+        cabina.lineTo(0, -alto/3);
+        cabina.lineTo(ancho/6, -alto/6);
+        cabina.lineTo(ancho/6, alto/6);
+        cabina.lineTo(-ancho/6, alto/6);
+        cabina.closePath();
+        
+        g2d.setColor(colorSecundario);
+        g2d.fill(cabina);
+        
+        // Casco del piloto
+        g2d.setColor(colorDetalles);
+        g2d.fillOval(-ancho/10, -alto/8, ancho/5, alto/5);
+        
+        // Alerones y detalles
+        // Alerón delantero
+        g2d.setColor(colorSecundario);
+        g2d.fillRect(-ancho/2-3, -alto/2-3, ancho+6, 5);
+        
+        // Detalles del alerón delantero
+        g2d.setColor(colorDetalles);
+        g2d.fillRect(-ancho/2-3, -alto/2-3, 3, 5);
+        g2d.fillRect(ancho/2, -alto/2-3, 3, 5);
+        
+        // Alerón trasero
+        g2d.setColor(colorSecundario);
+        g2d.fillRect(-ancho/2-2, alto/2, ancho+4, 6);
+        
+        // Soporte del alerón trasero
+        g2d.setColor(colorPrincipal);
+        g2d.fillRect(-ancho/6, alto/3, ancho/3, alto/6);
+        
+        // Ruedas
+        g2d.setColor(Color.BLACK);
+        // Ruedas delanteras
+        g2d.fillRoundRect(-ancho/2-4, -alto/3, 8, 12, 3, 3);
+        g2d.fillRoundRect(ancho/2-4, -alto/3, 8, 12, 3, 3);
+        // Ruedas traseras
+        g2d.fillRoundRect(-ancho/2-5, alto/6, 10, 15, 3, 3);
+        g2d.fillRoundRect(ancho/2-5, alto/6, 10, 15, 3, 3);
+        
+        // Llantas
+        g2d.setColor(Color.LIGHT_GRAY);
+        g2d.fillOval(-ancho/2-2, -alto/3+3, 4, 6);
+        g2d.fillOval(ancho/2-2, -alto/3+3, 4, 6);
+        g2d.fillOval(-ancho/2-2, alto/6+5, 4, 6);
+        g2d.fillOval(ancho/2-2, alto/6+5, 4, 6);
+        
+        // Número del coche
+        g2d.setColor(Color.WHITE);
+        g2d.drawString("1", -3, 0);
         
         // Si estamos fuera de la pista, mostrar un indicador
-        if (!enPista) {
+        if (!enPista && !enPits) {
             g2d.setColor(new Color(255, 0, 0, 128));
+            g2d.fillOval(-ancho/2 - 5, -alto/2 - 5, ancho + 10, alto + 10);
+        }
+        
+        // Si estamos en pits, mostrar un indicador
+        if (enPits) {
+            g2d.setColor(new Color(255, 255, 0, 128));
             g2d.fillOval(-ancho/2 - 5, -alto/2 - 5, ancho + 10, alto + 10);
         }
         
         // Restaurar la transformación original
         g2d.setTransform(transformOriginal);
-        
-        // Para depuración, dibujamos los puntos de colisión
-        /*
-        g2d.setColor(Color.YELLOW);
-        for (Point2D punto : puntosColision) {
-            g2d.fillOval((int)punto.getX() - 2, (int)punto.getY() - 2, 4, 4);
-        }
-        */
     }
     
     // Control del coche
     public void acelerar() {
-        velocidad = Math.min(velocidad + aceleracion, velocidadMaxima);
+        acelerando = true;
         frenando = false;
+    }
+    
+    public void soltarAcelerador() {
+        acelerando = false;
     }
     
     public void frenar() {
         frenando = true;
+        acelerando = false;
     }
     
     public void girarIzquierda() {
-        // Solo permitir giro efectivo cuando hay movimiento
-        if (Math.abs(velocidad) > 0.1) {
-            angulo -= maniobrabilidad * (velocidad > 0 ? 1 : -1);
+        // Mejorada la capacidad de giro a baja velocidad
+        if (Math.abs(velocidad) > 0.05) { // Reducido de 0.1 a 0.05 para permitir giros a menor velocidad
+            double factorGiro = Math.min(1.0, Math.abs(velocidad) / 2.0); // Factor de giro proporcional a la velocidad
+            angulo -= maniobrabilidad * (velocidad > 0 ? 1 : -1) * factorGiro;
         }
     }
     
     public void girarDerecha() {
-        // Solo permitir giro efectivo cuando hay movimiento
-        if (Math.abs(velocidad) > 0.1) {
-            angulo += maniobrabilidad * (velocidad > 0 ? 1 : -1);
+        // Mejorada la capacidad de giro a baja velocidad
+        if (Math.abs(velocidad) > 0.05) { // Reducido de 0.1 a 0.05 para permitir giros a menor velocidad
+            double factorGiro = Math.min(1.0, Math.abs(velocidad) / 2.0); // Factor de giro proporcional a la velocidad
+            angulo += maniobrabilidad * (velocidad > 0 ? 1 : -1) * factorGiro;
         }
-    }
-    
-    public boolean comprobarColision(Path2D pistaBorde, Path2D pistaInterior) {
-        // Verificar si alguno de los puntos está fuera de la pista
-        boolean dentroExterior = true;
-        boolean fueraDentro = true;
-        
-        for (Point2D punto : puntosColision) {
-            // Debe estar dentro del borde exterior
-            if (!pistaBorde.contains(punto)) {
-                dentroExterior = false;
-            }
-            
-            // Y fuera del borde interior (si existe)
-            if (pistaInterior != null && pistaInterior.contains(punto)) {
-                fueraDentro = false;
-            }
-        }
-        
-        enPista = dentroExterior && fueraDentro;
-        
-        // Si está fuera de la pista, reducir la velocidad
-        if (!enPista) {
-            velocidad *= 0.8; // Mayor resistencia fuera de la pista
-        }
-        
-        return !enPista;
     }
     
     public double getX() {
@@ -237,7 +334,29 @@ public class CocheF1 {
         this.y = y;
     }
     
+    public void setInicioPosicion(double x, double y) {
+        this.inicioX = x;
+        this.inicioY = y;
+    }
+    
     public void detener() {
         this.velocidad = 0;
+        this.contadorAceleracion = 0;
+    }
+    
+    public boolean estaEnPista() {
+        return enPista;
+    }
+    
+    public double getVelocidad() {
+        return velocidad;
+    }
+    
+    public double getAngulo() {
+        return angulo;
+    }
+    
+    public void setAngulo(double angulo) {
+        this.angulo = angulo;
     }
 }
