@@ -24,7 +24,9 @@ import javax.swing.SwingUtilities;
 import javax.swing.border.EmptyBorder;
 import javax.swing.border.LineBorder;
 
-//Opciones del juego.
+import main.Main;
+
+
 
 public class MenuPrincipal extends JFrame {
 
@@ -53,7 +55,7 @@ public class MenuPrincipal extends JFrame {
         
         // Título 
         JLabel titleLabel = new JLabel("RETRO RACER");
-        titleLabel.setFont(new Font("Press Start 2P", Font.BOLD, 60));
+        titleLabel.setFont(Main.GLOBAL_FONT.deriveFont(Font.BOLD, 60f));
         titleLabel.setForeground(new Color(255, 215, 0)); // Dorado
         titleLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
         titleLabel.setBorder(new EmptyBorder(50, 0, 50, 0));
@@ -82,6 +84,7 @@ public class MenuPrincipal extends JFrame {
     }
     
     private void setupButtonActions(JButton[] buttons) {
+
     	
     	buttons[0].addActionListener(e -> {
     	    SwingUtilities.invokeLater(() -> {
@@ -90,6 +93,15 @@ public class MenuPrincipal extends JFrame {
     	});
     	
     	// Botón GARAGE
+
+        // Botón GARAGE
+    	 buttons[0].addActionListener(e -> {
+    	        SwingUtilities.invokeLater(() -> {
+    	            openCarreraView(); // Abre el panel de carrera
+    	        });
+    	    });
+    	 
+
         buttons[1].addActionListener(e -> {
             
             SwingUtilities.invokeLater(() -> {
@@ -149,6 +161,7 @@ public class MenuPrincipal extends JFrame {
         dialog.setVisible(true);
     }
     
+
     private void openCircuitoF1() {
     	CircuitoF1 circuitoF1 = new CircuitoF1();
         JDialog dialog = new JDialog((JFrame) SwingUtilities.getWindowAncestor(this), "Carrera", true);
@@ -158,6 +171,19 @@ public class MenuPrincipal extends JFrame {
         dialog.setUndecorated(true);
         dialog.setVisible(true);
     }
+
+    private void openCarreraView() {
+        Carrera carreraPanel = new Carrera();
+        JDialog dialog = new JDialog(this, "Carrera", false); // No modal (permite interactuar con otros elementos)
+        dialog.setContentPane(carreraPanel);
+        dialog.setSize(1200, 750);
+        dialog.setLocationRelativeTo(this);
+        dialog.setUndecorated(true); // Sin bordes (opcional)
+        dialog.setVisible(true);
+    }
+
+    
+
     
     public static void main(String[] args) {
         SwingUtilities.invokeLater(() -> {

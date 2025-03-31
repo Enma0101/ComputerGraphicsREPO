@@ -10,6 +10,7 @@ import javax.swing.*;
 import graphics.DoorAnimation;
 import main.Main;
 
+
 public class GarageView extends JPanel {
 	
     private String ColorPrincipal = "188, 24, 35";
@@ -17,6 +18,9 @@ public class GarageView extends JPanel {
     private String EquipoSeleccionado = "Ferrari";
     private Color ColorMain = stringToColor(ColorPrincipal);
     private Color ColorSen = stringToColor(Colorsecundario);
+
+
+
     
     private JLabel label, label2, Agarre, VelocidadMAX, Potencia, Peso, stad;
     private JButton buttonBack, buttonModificar;
