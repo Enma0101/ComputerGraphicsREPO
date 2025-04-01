@@ -2,6 +2,8 @@ package ui;
 import java.awt.BasicStroke;
 import java.awt.BorderLayout;
 import java.awt.Color;
+import java.awt.Dimension;
+import java.awt.FlowLayout;
 import java.awt.Font;
 import java.awt.FontMetrics;
 import java.awt.GradientPaint;
@@ -42,9 +44,15 @@ public class CircuitoF1 extends JPanel {
     private boolean teclaIzquierdaPresionada;
     private boolean teclaDerechaPresionada;
     private Area areaPista;
- 
+    private int penalizaciones = 0;
+    private int segundosPenalizacion = 0;
+    private boolean mostrandoPenalizacion = false;
+    private Timer timerPenalizacion;
+    private boolean carreraFinalizada = false;
+    private long ultimoChoque = 0;
+    private static final int VUELTAS_PARA_FINALIZAR = 5;
+    private static final int PENALIZACION_SEGUNDOS = 5;
     private boolean haCruzado = false;
-    
     private Color ColorPricipal = new Color(188, 24, 35);
     private int vueltas = 0; 
     private int segundos = 0; 
@@ -99,8 +107,7 @@ public class CircuitoF1 extends JPanel {
         timer = new Timer(16, new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                // Solo actualizar el coche si la carrera ha iniciado
-              
+                if (!carreraFinalizada) {
                     cocheF1.actualizar();
                     
                     // Verificar si ha cruzado la meta
@@ -109,12 +116,19 @@ public class CircuitoF1 extends JPanel {
                         if (!haCruzado) {
                             vueltas++;
                             haCruzado = true;
+                            
+                            // Verificar si ha completado las vueltas necesarias
+                            if (vueltas >= VUELTAS_PARA_FINALIZAR) {
+                                finalizarCarrera();
+                            }
                         }
                     } else {
                         haCruzado = false;
                     }
-                
-                
+                    
+                    // Verificar colisiones con el borde de la pista
+                    verificarColisiones(posicionCoche);
+                }
                 repaint();
             }
         });
@@ -736,62 +750,264 @@ public class CircuitoF1 extends JPanel {
 
 
 
-//Agrega esta función para dibujar el tablero digital
-private void dibujarTableroDatos(Graphics2D g2d) {
- int x = 1000;
- int y = 0;
- int ancho = 200;
- int alto = 80;
- 
- // Fondo del tablero
- GradientPaint fondoTablero = new GradientPaint(
-     x, y, new Color(30, 30, 30),
-     x, y + alto, new Color(60, 60, 60)
- );
- g2d.setPaint(fondoTablero);
- g2d.fillRoundRect(x, y, ancho, alto, 15, 15);
- 
- // Borde del tablero
- g2d.setStroke(new BasicStroke(3));
- g2d.setColor(new Color(100, 100, 100));
- g2d.drawRoundRect(x, y, ancho, alto, 15, 15);
- // Detalles estéticos (tornillos en las esquinas)
- g2d.setColor(new Color(150, 150, 150));
- int radioTornillo = 5;
- g2d.fillOval(x + 8, y + 8, radioTornillo*2, radioTornillo*2);
- g2d.fillOval(x + ancho - 8 - radioTornillo*2, y + 8, radioTornillo*2, radioTornillo*2);
- g2d.fillOval(x + 8, y + alto - 8 - radioTornillo*2, radioTornillo*2, radioTornillo*2);
- g2d.fillOval(x + ancho - 8 - radioTornillo*2, y + alto - 8 - radioTornillo*2, radioTornillo*2, radioTornillo*2);
- // Línea divisoria
- g2d.setStroke(new BasicStroke(2));
- g2d.setColor(new Color(100, 100, 100));
- g2d.drawLine(x + 10, y + alto/2, x + ancho - 10, y + alto/2);
- 
- // Sección Vueltas
- g2d.setFont(Main.GLOBAL_FONT.deriveFont(13f));
- g2d.setColor(new Color(253, 217, 0));
- g2d.drawString("VUELTAS:", x + 15, y + 28);
- 
- // Número de vueltas (estilo LED digital)
- g2d.setFont(Main.Digital);
- g2d.setColor(new Color(255,255,255)); 
- 
- g2d.drawString(String.format("%01d", vueltas), 1120, y + 28);
- 
- // Sección Tiempo
- g2d.setFont(Main.GLOBAL_FONT.deriveFont(13f));
- g2d.setColor(new Color(253, 217, 0));
- g2d.drawString("TIEMPO:", x + 15, y + 28 + alto/2);
- 
- // Tiempo (estilo LED digital)
- g2d.setFont(Main.Digital.deriveFont(22f));
- g2d.setColor(new Color(255,255,255));
- String tiempoStr =  String.format("%02d:%02d:%02d", minutos, segundos, milisegundos / 10);
-    
- g2d.drawString(tiempoStr, 1108, y + 28 + alto/2);
- 
+    private void dibujarTableroDatos(Graphics2D g2d) {
+        int x = 1000;
+        int y = 0;
+        int ancho = 200;
+        int alto = 80;
+        
+        // Fondo del tablero
+        GradientPaint fondoTablero = new GradientPaint(
+            x, y, new Color(30, 30, 30),
+            x, y + alto, new Color(60, 60, 60)
+        );
+        g2d.setPaint(fondoTablero);
+        g2d.fillRoundRect(x, y, ancho, alto, 15, 15);
+        
+        // Borde del tablero
+        g2d.setStroke(new BasicStroke(3));
+        g2d.setColor(new Color(100, 100, 100));
+        g2d.drawRoundRect(x, y, ancho, alto, 15, 15);
+        // Detalles estéticos (tornillos en las esquinas)
+        g2d.setColor(new Color(150, 150, 150));
+        int radioTornillo = 5;
+        g2d.fillOval(x + 8, y + 8, radioTornillo*2, radioTornillo*2);
+        g2d.fillOval(x + ancho - 8 - radioTornillo*2, y + 8, radioTornillo*2, radioTornillo*2);
+        g2d.fillOval(x + 8, y + alto - 8 - radioTornillo*2, radioTornillo*2, radioTornillo*2);
+        g2d.fillOval(x + ancho - 8 - radioTornillo*2, y + alto - 8 - radioTornillo*2, radioTornillo*2, radioTornillo*2);
+        
+        // Línea divisoria
+        g2d.setStroke(new BasicStroke(2));
+        g2d.setColor(new Color(100, 100, 100));
+        g2d.drawLine(x + 10, y + alto/2, x + ancho - 10, y + alto/2);
+        
+        // Sección Vueltas
+        g2d.setFont(Main.GLOBAL_FONT.deriveFont(13f));
+        g2d.setColor(new Color(253, 217, 0));
+        g2d.drawString("VUELTAS:", x + 15, y + 28);
+        
+        // Número de vueltas (estilo LED digital)
+        g2d.setFont(Main.Digital);
+        g2d.setColor(new Color(255,255,255)); 
+        g2d.drawString(String.format("%01d/%01d", vueltas, VUELTAS_PARA_FINALIZAR), 1120, y + 28);
+        
+        // Sección Tiempo
+        g2d.setFont(Main.GLOBAL_FONT.deriveFont(13f));
+        g2d.setColor(new Color(253, 217, 0));
+        g2d.drawString("TIEMPO:", x + 15, y + 28 + alto/2);
+        
+        // Tiempo (estilo LED digital)
+        g2d.setFont(Main.Digital.deriveFont(22f));
+        g2d.setColor(new Color(255,255,255));
+        String tiempoStr = String.format("%02d:%02d:%02d", minutos, segundos, milisegundos / 10);
+        g2d.drawString(tiempoStr, 1108, y + 28 + alto/2);
+        
+        // Mostrar penalización si es necesario
+        if (mostrandoPenalizacion) {
+            g2d.setColor(new Color(255, 0, 0, 200));
+            g2d.setFont(Main.GLOBAL_FONT.deriveFont(Font.BOLD, 24f));
+            g2d.drawString("+" + PENALIZACION_SEGUNDOS + "s", x + ancho - 60, y + 40);
+        }
+        
+        // Mostrar total de penalizaciones
+        if (penalizaciones > 0) {
+            g2d.setColor(new Color(255, 80, 80));
+            g2d.setFont(Main.GLOBAL_FONT.deriveFont(12f));
+            g2d.drawString("Penalizaciones: " + penalizaciones + " (" + segundosPenalizacion + "s)", x + ancho - 130, y + alto - 5);
+        }
+    }
+        
+    private void verificarColisiones(Point2D posicionCoche) {
+        System.out.println("Verificando colisiones. En pista: " + estaEnPista(posicionCoche));
+        if (!estaEnPista(posicionCoche)) {
+            long tiempoActual = System.currentTimeMillis();
+            System.out.println("Fuera de pista. Tiempo actual: " + tiempoActual + ", último choque: " + ultimoChoque);
+            if (tiempoActual - ultimoChoque > 1000) {
+                System.out.println("Aplicando penalización. Penalizaciones antes: " + penalizaciones);
+                penalizaciones++;
+                segundosPenalizacion += PENALIZACION_SEGUNDOS;
+                System.out.println("Penalizaciones después: " + penalizaciones + ", segundos: " + segundosPenalizacion);
+                mostrandoPenalizacion = true;
+                
+                // Resto del código para el timer...
+                
+                ultimoChoque = tiempoActual;
+            }
+        }
+    }
 
+// Agrega este método para finalizar la carrera
+private void finalizarCarrera() {
+    carreraFinalizada = true;
+    timer.stop();
+    temporizador.stop();
+    if (timerPenalizacion != null) {
+        timerPenalizacion.stop();
+    }
+    
+    // Mostrar ventana de podio
+    mostrarVentanaPodio();
 }
+
+
+
+
+// Método para mostrar la ventana de podio
+
+private void mostrarVentanaPodio() {
+    JDialog podioDialog = new JDialog(SwingUtilities.getWindowAncestor(this), "¡Carrera Finalizada!");
+    podioDialog.setSize(1200, 750);
+    podioDialog.setUndecorated(true);
+    podioDialog.setLocationRelativeTo(this);
+    podioDialog.setResizable(false);
+    
+    JPanel panelPodio = new JPanel() {
+        @Override
+        protected void paintComponent(Graphics g) {
+            super.paintComponent(g);
+            Graphics2D g2d = (Graphics2D) g;
+            g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+            
+            // Fondo degradado
+            GradientPaint fondoGradiente = new GradientPaint(
+                0, 0, new Color(30, 30, 60),
+                0, getHeight(), new Color(15, 15, 30)
+            );
+            g2d.setPaint(fondoGradiente);
+            g2d.fillRect(0, 0, getWidth(), getHeight());
+            
+            // Dibujar podio
+            g2d.setColor(new Color(212, 175, 55)); // Dorado
+            g2d.fillRect(getWidth()/2 - 75, getHeight() - 100, 150, 80);
+            
+            // Dibujar confetti
+            Random rand = new Random();
+            for (int i = 0; i < 100; i++) {
+                g2d.setColor(new Color(
+                    rand.nextInt(255),
+                    rand.nextInt(255),
+                    rand.nextInt(255)
+                ));
+                g2d.fillOval(
+                    rand.nextInt(getWidth()),
+                    rand.nextInt(getHeight()/2),
+                    5, 5
+                );
+            }
+            
+            // Dibujar coche
+            AffineTransform originalTransform = g2d.getTransform();
+            g2d.translate(getWidth()/2, getHeight() - 130);
+            g2d.scale(1.5, 1.5);
+            cocheF1.dibujarStatico(g2d);
+            g2d.setTransform(originalTransform);
+            
+            // Dibujar texto
+            g2d.setColor(Color.WHITE);
+            g2d.setFont(new Font("Arial", Font.BOLD, 24));
+            g2d.drawString("¡CARRERA FINALIZADA!", getWidth()/2 - 150, 40);
+            
+            g2d.setFont(new Font("Arial", Font.BOLD, 18));
+            g2d.drawString("Estadísticas", getWidth()/2 - 50, 80);
+            
+            g2d.setFont(new Font("Arial", Font.PLAIN, 16));
+            g2d.drawString("Vueltas completadas: " + vueltas + "/" + VUELTAS_PARA_FINALIZAR, 50, 120);
+            
+            // Calcular tiempo total con penalizaciones
+            int tiempoTotalSegundos = minutos * 60 + segundos + segundosPenalizacion;
+            int minutosTotales = tiempoTotalSegundos / 60;
+            int segundosTotales = tiempoTotalSegundos % 60;
+            int penalizacionActual = CocheF1.getPenalizacion();
+            g2d.drawString("Tiempo: " + String.format("%02d:%02d.%02d", minutos, segundos, milisegundos / 10), 50, 150);
+            g2d.drawString("Penalizaciones: " + penalizacionActual + " (" + segundosPenalizacion + " segundos)", 50, 180);
+            g2d.drawString("Tiempo total: " + String.format("%02d:%02d.%02d", minutosTotales, segundosTotales, milisegundos / 10), 50, 210);
+        }
+    };
+    
+    podioDialog.setLayout(new BorderLayout());
+    podioDialog.add(panelPodio, BorderLayout.CENTER);
+    
+    JPanel panelBotones = new JPanel(new FlowLayout()); // Set explicit layout
+    panelBotones.setBackground(new Color(30, 30, 60));
+    panelBotones.setBorder(BorderFactory.createEmptyBorder(10, 40, 10, 0)); // Add some padding
+    
+    JButton btnVolverCorrer = new JButton("Volver a Correr");
+    btnVolverCorrer.setFont(Main.GLOBAL_FONT.deriveFont(14f));
+    btnVolverCorrer.setBackground(Color.DARK_GRAY);
+    btnVolverCorrer.setForeground(Color.WHITE);
+    btnVolverCorrer.setFocusPainted(false);
+    btnVolverCorrer.setPreferredSize(new Dimension(300, 40)); // Set a specific size
+    
+    JButton btnVolverMenu = new JButton("Menú Principal");
+    btnVolverMenu.setFont(Main.GLOBAL_FONT.deriveFont(14f));
+    btnVolverMenu.setBackground(Color.DARK_GRAY);
+    btnVolverMenu.setForeground(Color.WHITE);
+    btnVolverMenu.setFocusPainted(false);
+    btnVolverMenu.setPreferredSize(new Dimension(300, 40)); // Set a specific size
+    
+    btnVolverCorrer.addActionListener(new ActionListener() {
+        @Override
+        public void actionPerformed(ActionEvent e) {
+            podioDialog.dispose();
+            reiniciarCarrera();
+        }
+    });
+    
+    btnVolverMenu.addActionListener(new ActionListener() {
+        @Override
+        public void actionPerformed(ActionEvent e) {
+            podioDialog.dispose();
+            Window window = SwingUtilities.getWindowAncestor(CircuitoF1.this);
+            if (window != null) window.dispose();
+        }
+    });
+    
+    panelBotones.add(btnVolverCorrer);
+    panelBotones.add(btnVolverMenu);
+    
+    // Make sure the dialog's layout is properly set
+    podioDialog.setLayout(new BorderLayout());
+    podioDialog.add(panelPodio, BorderLayout.CENTER);
+    podioDialog.add(panelBotones, BorderLayout.SOUTH);
+    
+    podioDialog.setVisible(true);
+}
+
+// Método para reiniciar la carrera
+private void reiniciarCarrera() {
+    // Reiniciar variables
+    vueltas = 0;
+    segundos = 0;
+    milisegundos = 0;
+    minutos = 0;
+    penalizaciones = 0;
+    segundosPenalizacion = 0;
+    carreraFinalizada = false;
+    
+    // Reiniciar coche
+    cocheF1 = new CocheF1(1000, 450, this);
+    
+    // Reiniciar temporizadores
+    if (temporizador != null) {
+        temporizador.start();
+    }
+    if (timer != null) {
+        timer.start();
+    }
+    
+    // Solicitar enfoque
+    requestFocus();
+}
+
+
+
+
+
+
+
+
+
+
 
 
 

@@ -29,11 +29,12 @@ public class CocheF1 {
     private double ultimaXValida, ultimaYValida;
     private double ultimoAnguloValido;
     private double inicioX, inicioY;
-    private Color colorPrincipal = new Color(188, 24, 35);
+    private Color colorPrincipal = new Color(200, 204, 206);
     private Color colorSecundario;
     private Color colorDetalles;
    private CircuitoF1 pista;
    private int  Vueltas;
+   private static int Penalizacion = 0;
   
   
     // Tamaño del coche
@@ -58,11 +59,11 @@ public class CocheF1 {
         this.inicioY = y;
         this.velocidad = 0;
         this.angulo = 0;
-        this.aceleracionInicial = 0.1; // 
+        this.aceleracionInicial = 0.2; // 
         this.aceleracion = aceleracionInicial;
         this.velocidadMaxima = 8; 
         this.friccion = 0.975; // 
-        this.maniobrabilidad = 0.09; // 
+        this.maniobrabilidad = 0.095; // 
         this.frenando = false;
         this.acelerando = false;
         this.contadorAceleracion = 0;
@@ -139,11 +140,12 @@ public class CocheF1 {
             y = nuevaY;
             enPista = enNuevaPista;
         } else {
-            System.out.print("Ouch chocaste");
+        	Penalizacion ++;
+        	
             respawn();
         }
         
-        // Actualizar puntos de colisión
+      
         actualizarPuntosColision();
     }
     
@@ -319,6 +321,40 @@ public class CocheF1 {
             double factorGiro = Math.min(1.0, Math.abs(velocidad) / 2.0); // Factor de giro proporcional a la velocidad
             angulo += maniobrabilidad * (velocidad > 0 ? 1 : -1) * factorGiro;
         }
+    }
+    
+    public void dibujarStatico(Graphics2D g2d) {
+        // Este método dibujará el coche sin aplicar rotaciones ni transformaciones
+        // para la pantalla de podio
+        // Copiar el código básico de dibujo del coche desde el método dibujar
+        // pero eliminar las transformaciones según posición en la pista
+        
+        // Dibujar carrocería
+        g2d.setColor(new Color(255, 0, 0)); // Rojo
+        g2d.fillRoundRect(-20, -10, 40, 20, 8, 8);
+        
+        // Dibujar alerón delantero
+        g2d.setColor(new Color(50, 50, 50));
+        g2d.fillRect(-25, -8, 5, 16);
+        
+        // Dibujar alerón trasero
+        g2d.setColor(new Color(50, 50, 50));
+        g2d.fillRect(15, -8, 10, 16);
+        
+        // Dibujar cabina
+        g2d.setColor(new Color(100, 100, 100));
+        g2d.fillOval(-5, -7, 14, 14);
+        
+        // Dibujar ruedas
+        g2d.setColor(Color.BLACK);
+        g2d.fillOval(-15, -12, 10, 6); // Rueda delantera izquierda
+        g2d.fillOval(-15, 6, 10, 6);  // Rueda delantera derecha
+        g2d.fillOval(5, -12, 10, 6);   // Rueda trasera izquierda
+        g2d.fillOval(5, 6, 10, 6);    // Rueda trasera derecha
+    }
+    
+    public static int getPenalizacion() {
+        return Penalizacion;
     }
     
     public double getX() {
