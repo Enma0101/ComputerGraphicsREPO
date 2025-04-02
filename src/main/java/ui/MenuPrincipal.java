@@ -30,12 +30,15 @@ import main.Main;
 
 public class MenuPrincipal extends JFrame {
 	private JDialog dialog = null;
-    public MenuPrincipal() {
-        // Configuración de la ventana
-    	this.setSize(1200,750);
+	private String username;
+
+	 
+    public MenuPrincipal(String username) {
+    	this.username = username;
+ this.setSize(1200,750);
     	this.setLocationRelativeTo(null);
         this.setDefaultCloseOperation(EXIT_ON_CLOSE);
-        this.setTitle("Menu");
+        this.setUndecorated(true);
         this.setLayout(new BorderLayout());
         
         // Panel principal con fondo negro
@@ -92,7 +95,7 @@ public class MenuPrincipal extends JFrame {
     	    });
     	});
     	
-    	// Botón GARAGE
+    	
 
        
     	 
@@ -104,6 +107,20 @@ public class MenuPrincipal extends JFrame {
                
             });
         });
+        
+        
+		/*buttons[3].addActionListener(e -> {
+		            
+		            SwingUtilities.invokeLater(() -> {
+		            	openConfiguraciones();
+		               
+		            });
+		        });
+        
+        */
+        
+        
+        
         
         // Botón SALIR
         buttons[4].addActionListener(e -> System.exit(0));
@@ -121,7 +138,7 @@ public class MenuPrincipal extends JFrame {
             }
         };
       
-        button.setFont(new Font("Press Start 2P", Font.PLAIN, 24));
+        button.setFont(Main.GLOBAL_FONT.deriveFont(20f));
         button.setForeground(Color.WHITE);
         button.setBorder(new LineBorder(new Color(200, 0, 0), 4, true));
         button.setAlignmentX(Component.CENTER_ALIGNMENT);
@@ -148,7 +165,7 @@ public class MenuPrincipal extends JFrame {
     
     private void openGarageView() {
         if (dialog == null || !dialog.isVisible()) {
-            GarageView garageView = new GarageView();
+            GarageView garageView = new GarageView(username);
             dialog = new JDialog((JFrame) SwingUtilities.getWindowAncestor(this), "Pit Stop", true);
             dialog.setContentPane(garageView);
             dialog.setSize(1200, 750);
@@ -160,7 +177,7 @@ public class MenuPrincipal extends JFrame {
 
 
     private void openCircuitoF1() {
-        CircuitoF1 circuitoF1 = new CircuitoF1();
+        CircuitoF1 circuitoF1 = new CircuitoF1(username);
         JDialog dialog = new JDialog((JFrame) SwingUtilities.getWindowAncestor(this), "Carrera", true);
         dialog.setContentPane(circuitoF1);
         dialog.setSize(1200, 750);
@@ -174,17 +191,18 @@ public class MenuPrincipal extends JFrame {
             }
         });
     }
-
-
+        
     
 
-    
-    public static void main(String[] args) {
-        SwingUtilities.invokeLater(() -> {
-            MenuPrincipal menu = new MenuPrincipal();
-            menu.setVisible(true);
-        });
+        
     }
+
+
     
-}
+
+    
+  
+    
+    
+
 

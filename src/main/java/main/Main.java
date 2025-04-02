@@ -6,6 +6,8 @@ import java.awt.GraphicsEnvironment;
 import java.io.IOException;
 import java.io.InputStream;
 
+import ui.Login;
+
 
 
 
@@ -64,8 +66,15 @@ public class Main {
 	           
 	        }
 	    }
-
+	    
+	    static Login login;
 	
-	
+	    public static void main(String[] args) {
+			
+			login = new Login();
+			login.setVisible(true);
+			
+			
+		}
 
 }

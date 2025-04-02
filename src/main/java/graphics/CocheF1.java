@@ -28,14 +28,14 @@ public class CocheF1 {
     private double aceleracionInicial;
     private double ultimaXValida, ultimaYValida;
     private double ultimoAnguloValido;
-    private double inicioX, inicioY;
+
     private Color colorPrincipal = new Color(200, 204, 206);
     private Color colorSecundario;
     private Color colorDetalles;
    private CircuitoF1 pista;
-   private int  Vueltas;
-   private static int Penalizacion = 0;
-  
+   private Point2D nuevaPosicion;
+
+
   
     // Tamaño del coche
     private int ancho;
@@ -55,11 +55,9 @@ public class CocheF1 {
     public CocheF1(double x, double y, CircuitoF1 pista ) {
         this.x = x;
         this.y = y;
-        this.inicioX = x;
-        this.inicioY = y;
         this.velocidad = 0;
         this.angulo = 0;
-        this.aceleracionInicial = 0.2; // 
+        this.aceleracionInicial = 0.1; // 
         this.aceleracion = aceleracionInicial;
         this.velocidadMaxima = 8; 
         this.friccion = 0.975; // 
@@ -69,7 +67,6 @@ public class CocheF1 {
         this.contadorAceleracion = 0;
         this.ancho = 24;
         this.alto = 45;
-        this.colorPrincipal = colorPrincipal;
         this.colorSecundario = Color.BLACK;
         this.colorDetalles = Color.WHITE;
         this.puntosColision = new ArrayList<>();
@@ -108,48 +105,39 @@ public class CocheF1 {
         if (frenando) {
             velocidad *= 0.85; // Frenado más intenso (de 0.9 a 0.85)
         }
-        // Verificar si está en pits
-        Point2D posicionActual = new Point2D.Double(x, y);
         
         
-        // Aplicar fricción natural o reducción en los pits
-        if (enPits) {
-            // En pits, limitar la velocidad a un máximo
-            double velocidadMaximaPits = 4.5; // Un poco mayor que antes (4.0)
-            if (velocidad > velocidadMaximaPits) {
-                velocidad = Math.max(velocidadMaximaPits, velocidad * 0.95);
+        
+    
+        if (enPista) {
+         velocidad *= friccion;
             }
-        } else {
-            // Fricción normal
-            velocidad *= friccion;
-        }
+       
         
         // Calcular la nueva posición basada en velocidad y ángulo
         double nuevaX = x + Math.sin(angulo) * velocidad;
         double nuevaY = y - Math.cos(angulo) * velocidad;
         
         // Crear un punto para la nueva posición
-        Point2D nuevaPosicion = new Point2D.Double(nuevaX, nuevaY);
-        
+        nuevaPosicion = new Point2D.Double(nuevaX, nuevaY);
+
         // Verificar si la nueva posición está en la pista
+        
         boolean enNuevaPista = pista.estaEnPista(nuevaPosicion);
         
-        // Solo actualizar posición si está en pista o en pits
         if (enNuevaPista) {
             x = nuevaX;
             y = nuevaY;
             enPista = enNuevaPista;
-        } else {
-        	Penalizacion ++;
-        	
-            respawn();
-        }
+         
+            
+        } 
         
-      
+ 
         actualizarPuntosColision();
     }
     
-    private void respawn() {
+    public void respawn() {
         // Respawn en la última posición válida conocida
         this.x = ultimaXValida;
         this.y = ultimaYValida;
@@ -324,39 +312,82 @@ public class CocheF1 {
     }
     
     public void dibujarStatico(Graphics2D g2d) {
-        // Este método dibujará el coche sin aplicar rotaciones ni transformaciones
-        // para la pantalla de podio
-        // Copiar el código básico de dibujo del coche desde el método dibujar
-        // pero eliminar las transformaciones según posición en la pista
+       
+    	 // Cuerpo principal con forma más aerodinámica
+        Path2D cuerpo = new Path2D.Double();
+        cuerpo.moveTo(-ancho/2, alto/3);
+        cuerpo.lineTo(-ancho/4, -alto/2); // Punta frontal
+        cuerpo.lineTo(ancho/4, -alto/2);
+        cuerpo.lineTo(ancho/2, alto/3);
+        cuerpo.lineTo(ancho/2, alto/2);
+        cuerpo.lineTo(-ancho/2, alto/2);
+        cuerpo.closePath();
         
-        // Dibujar carrocería
-        g2d.setColor(new Color(255, 0, 0)); // Rojo
-        g2d.fillRoundRect(-20, -10, 40, 20, 8, 8);
-        
-        // Dibujar alerón delantero
-        g2d.setColor(new Color(50, 50, 50));
-        g2d.fillRect(-25, -8, 5, 16);
-        
-        // Dibujar alerón trasero
-        g2d.setColor(new Color(50, 50, 50));
-        g2d.fillRect(15, -8, 10, 16);
-        
-        // Dibujar cabina
-        g2d.setColor(new Color(100, 100, 100));
-        g2d.fillOval(-5, -7, 14, 14);
-        
-        // Dibujar ruedas
+        g2d.setColor(colorPrincipal);
+        g2d.fill(cuerpo);
         g2d.setColor(Color.BLACK);
-        g2d.fillOval(-15, -12, 10, 6); // Rueda delantera izquierda
-        g2d.fillOval(-15, 6, 10, 6);  // Rueda delantera derecha
-        g2d.fillOval(5, -12, 10, 6);   // Rueda trasera izquierda
-        g2d.fillOval(5, 6, 10, 6);    // Rueda trasera derecha
+        g2d.setStroke(new BasicStroke(1.0f));
+        g2d.draw(cuerpo);
+        
+        // Cabina del piloto (cockpit)
+        Path2D cabina = new Path2D.Double();
+        cabina.moveTo(-ancho/6, -alto/6);
+        cabina.lineTo(0, -alto/3);
+        cabina.lineTo(ancho/6, -alto/6);
+        cabina.lineTo(ancho/6, alto/6);
+        cabina.lineTo(-ancho/6, alto/6);
+        cabina.closePath();
+        
+        g2d.setColor(colorSecundario);
+        g2d.fill(cabina);
+        
+        // Casco del piloto
+        g2d.setColor(colorDetalles);
+        g2d.fillOval(-ancho/10, -alto/8, ancho/5, alto/5);
+        
+        // Alerones y detalles
+        // Alerón delantero
+        g2d.setColor(colorSecundario);
+        g2d.fillRect(-ancho/2-3, -alto/2-3, ancho+6, 5);
+        
+        // Detalles del alerón delantero
+        g2d.setColor(colorDetalles);
+        g2d.fillRect(-ancho/2-3, -alto/2-3, 3, 5);
+        g2d.fillRect(ancho/2, -alto/2-3, 3, 5);
+        
+        // Alerón trasero
+        g2d.setColor(colorSecundario);
+        g2d.fillRect(-ancho/2-2, alto/2, ancho+4, 6);
+        
+        // Soporte del alerón trasero
+        g2d.setColor(colorPrincipal);
+        g2d.fillRect(-ancho/6, alto/3, ancho/3, alto/6);
+        
+        // Ruedas
+        g2d.setColor(Color.BLACK);
+        // Ruedas delanteras
+        g2d.fillRoundRect(-ancho/2-4, -alto/3, 8, 12, 3, 3);
+        g2d.fillRoundRect(ancho/2-4, -alto/3, 8, 12, 3, 3);
+        // Ruedas traseras
+        g2d.fillRoundRect(-ancho/2-5, alto/6, 10, 15, 3, 3);
+        g2d.fillRoundRect(ancho/2-5, alto/6, 10, 15, 3, 3);
+        
+        // Llantas
+        g2d.setColor(Color.LIGHT_GRAY);
+        g2d.fillOval(-ancho/2-2, -alto/3+3, 4, 6);
+        g2d.fillOval(ancho/2-2, -alto/3+3, 4, 6);
+        g2d.fillOval(-ancho/2-2, alto/6+5, 4, 6);
+        g2d.fillOval(ancho/2-2, alto/6+5, 4, 6);
+        
+        // Número del coche
+        g2d.setColor(Color.WHITE);
+        g2d.drawString("1", -3, 0);   // Rueda trasera derecha
     }
     
-    public static int getPenalizacion() {
-        return Penalizacion;
+   
+    public Point2D getNuevaposicion() {
+    	return nuevaPosicion;
     }
-    
     public double getX() {
         return x;
     }
@@ -370,11 +401,7 @@ public class CocheF1 {
         this.y = y;
     }
     
-    public void setInicioPosicion(double x, double y) {
-        this.inicioX = x;
-        this.inicioY = y;
-    }
-    
+  
     public void detener() {
         this.velocidad = 0;
         this.contadorAceleracion = 0;
@@ -395,4 +422,9 @@ public class CocheF1 {
     public void setAngulo(double angulo) {
         this.angulo = angulo;
     }
+
+	
+
+
+
 }

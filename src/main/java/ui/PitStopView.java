@@ -18,9 +18,9 @@ public class PitStopView extends JPanel {
     private JButton saveButton, exitButton;
     private JLabel engineImage, tiresImage, wingImage,statsTitle;
 
-    public PitStopView(String primaryColor,String equipo ,String secondaryColor) {
-        this.colorPrimary = stringToColor(primaryColor);
-        this.colorSecondary = stringToColor(secondaryColor);
+    public PitStopView(Color colorMain,String equipo ,Color colorSen) {
+        this.colorPrimary = colorMain;
+        this.colorSecondary = colorSen;
         this.EquipoSeleccionado = equipo;
         setLayout(new BorderLayout());
         setOpaque(false);

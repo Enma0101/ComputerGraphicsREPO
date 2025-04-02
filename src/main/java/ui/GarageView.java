@@ -7,17 +7,21 @@ import java.awt.image.BufferedImage;
 import java.net.URL;
 import javax.swing.*;
 
+import database.UsuarioDAO;
 import graphics.DoorAnimation;
 import main.Main;
 
 
 public class GarageView extends JPanel {
 	
-    private String ColorPrincipal = "188, 24, 35";
-    private String Colorsecundario = "255, 242, 0";
-    private String EquipoSeleccionado = "Ferrari";
-    private Color ColorMain = stringToColor(ColorPrincipal);
-    private Color ColorSen = stringToColor(Colorsecundario);
+
+    private String EquipoSeleccionado = "";
+    private Color ColorMain ;
+    private Color ColorSen ;
+    private String username;
+    private String IdSeleccionado;
+    private UsuarioDAO usuarioDAO;
+    
 
 
 
@@ -26,7 +30,22 @@ public class GarageView extends JPanel {
     private JButton buttonBack, buttonModificar;
     private DoorAnimation doorAnimation;
 
-    public GarageView() {
+    public GarageView(String username) {
+    	  this.username = username;
+    	  this.usuarioDAO = new UsuarioDAO();
+ 
+    	
+    	  EquipoSeleccionado = usuarioDAO.obtenerEquipoUsuario(username);
+    	
+    	  
+    	  IdSeleccionado = usuarioDAO.obtenerIdEquipoUsuario(username);
+    	  
+    	  ColorMain = stringToColor(usuarioDAO.obtenerColorPrincipalEquipo(IdSeleccionado));
+    	  
+    	  ColorSen = stringToColor(usuarioDAO.obtenerColorSecundarioEquipo(IdSeleccionado));
+    	  
+    	  
+    	  
         setLayout(new BorderLayout());
         doorAnimation = new DoorAnimation(ColorMain);
      
@@ -171,7 +190,7 @@ public class GarageView extends JPanel {
     }
 
     private void openPitStopView() {
-        PitStopView pitStopView = new PitStopView(ColorPrincipal, EquipoSeleccionado, Colorsecundario);
+        PitStopView pitStopView = new PitStopView(ColorMain, EquipoSeleccionado, ColorSen);
         Window parentWindow = SwingUtilities.getWindowAncestor(this);
         JDialog dialog = new JDialog(parentWindow, "Pit Stop", Dialog.ModalityType.APPLICATION_MODAL);
         dialog.setContentPane(pitStopView);
