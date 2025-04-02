@@ -7,6 +7,7 @@ import java.io.IOException;
 import java.io.InputStream;
 
 import ui.Login;
+import utils.MusicaFondo;
 
 
 
@@ -16,7 +17,7 @@ public class Main {
 	   public static Font GLOBAL_FONT;
 	   public static Font GLOBAL_FONT2;
 	   public static Font Digital;
-	    
+	   public static MusicaFondo musica;
 
 	    static {
 	        try {
@@ -67,11 +68,21 @@ public class Main {
 	        }
 	    }
 	    
+	    
+	  
+	    
+	    
+	    
+	    
+	    
 	    static Login login;
 	
 	    public static void main(String[] args) {
+	 
+	   	 	musica = new MusicaFondo();
+	   	 	musica.reproducirMusica("/resources/Audio/musicafondo.wav");
 			
-			login = new Login();
+			login = new Login(musica);
 			login.setVisible(true);
 			
 			

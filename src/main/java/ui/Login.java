@@ -29,20 +29,26 @@ import javax.swing.border.EmptyBorder;
 import javax.swing.border.LineBorder;
 
 import database.UsuarioDAO;
+import main.Main;
 import ui.GarageView;
 //Selección de equipo y autenticación
+import utils.MusicaFondo;
 
 public class Login extends JFrame {
     private JTextField usernameField;
     private UsuarioDAO usuarioDAO;
+	public MusicaFondo MusicaFondo;
 
-    public Login() {
+    public Login(MusicaFondo musicaFondo) {
         this.usuarioDAO = new UsuarioDAO();
         this.setSize(1200,750);
         this.setLocationRelativeTo(null);
         this.setDefaultCloseOperation(EXIT_ON_CLOSE);
         this.setTitle("Login");
         this.setLayout(new BorderLayout());
+        this.MusicaFondo = musicaFondo;
+       	
+
 
         // Panel principal con fondo negro
         JPanel mainPanel = new JPanel() {
@@ -59,7 +65,7 @@ public class Login extends JFrame {
 
         // Título
         JLabel titleLabel = new JLabel("SIGN IN");
-        titleLabel.setFont(new Font("Press Start 2P", Font.BOLD, 60));
+        titleLabel.setFont(Main.GLOBAL_FONT);
         titleLabel.setForeground(new Color(255, 215, 0)); 
         titleLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
         titleLabel.setBorder(BorderFactory.createEmptyBorder(50, 0, 50, 0));
@@ -68,7 +74,7 @@ public class Login extends JFrame {
         // Campo de usuario
         usernameField = new JTextField();
         usernameField.setMaximumSize(new Dimension(400, 50));
-        usernameField.setFont(new Font("Press Start 2P", Font.PLAIN, 18));
+        usernameField.setFont(Main.GLOBAL_FONT.deriveFont(15f));
         usernameField.setAlignmentX(Component.CENTER_ALIGNMENT);
         usernameField.setBackground(Color.DARK_GRAY);
         usernameField.setForeground(Color.WHITE);
@@ -97,10 +103,10 @@ public class Login extends JFrame {
 
                     // Si tiene equipo asignado, lo lleva directamente al menú principal
                     if (equipo != null && !equipo.isEmpty()) {
-                        new MenuPrincipal(username).setVisible(true);
+                        new MenuPrincipal(username,MusicaFondo).setVisible(true);
                     } else {
                         // Si no tiene equipo asignado, lo lleva a la selección de equipo
-                        new SeleccionEquipo(username).setVisible(true);
+                        new SeleccionEquipo(username , MusicaFondo).setVisible(true);
                     }
                 } else {
                     // Si el usuario no existe, se registra
@@ -108,7 +114,7 @@ public class Login extends JFrame {
                     JOptionPane.showMessageDialog(null, "Usuario registrado exitosamente.");
 
                     // Luego lo redirigimos a la selección de equipo
-                    new SeleccionEquipo(username).setVisible(true);
+                    new SeleccionEquipo(username,MusicaFondo).setVisible(true);
                 }
 
                 dispose(); // Cerrar la ventana de login

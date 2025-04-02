@@ -5,7 +5,6 @@ import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.Font;
-import java.awt.FontMetrics;
 import java.awt.GradientPaint;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
@@ -23,7 +22,7 @@ import java.awt.geom.Area;
 import java.awt.geom.Path2D;
 import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
-
+import java.sql.SQLException;
 import java.util.Random;
 
 import javax.swing.*;
@@ -31,6 +30,7 @@ import javax.swing.*;
 import database.UsuarioDAO;
 import graphics.CocheF1;
 import main.Main;
+import utils.MusicaFondo;
 
 public class CircuitoF1 extends JPanel {
    
@@ -51,7 +51,7 @@ public class CircuitoF1 extends JPanel {
     private static final int VUELTAS_PARA_FINALIZAR = 5;
     private static final int PENALIZACION_SEGUNDOS = 5;
     private boolean haCruzado = false;
-    private Color ColorPricipal = new Color(188, 24, 35);
+
     private int vueltas = 0; 
     private int segundos = 0; 
     private int milisegundos = 0;
@@ -62,15 +62,22 @@ public class CircuitoF1 extends JPanel {
     private Path2D lineaMeta;
     private Area areaLineaMeta;
     private String username;
-    private String IdSeleccionado;
+  
     private UsuarioDAO usuarioDAO;
     private String EquipoSeleccionado;
+    public MusicaFondo MusicaFondo;
+    public int iniciar = 0;
     
   
-    public CircuitoF1(String username) {
+    public CircuitoF1(String username, MusicaFondo musicaFondo) throws SQLException {
+    	
+     
     	
     	this.username = username;
     	this.usuarioDAO = new UsuarioDAO();
+    	this.MusicaFondo = musicaFondo;
+    	
+    
     	
         JButton botonCerrar = new JButton("Back");
         setLayout(null);
@@ -97,7 +104,7 @@ public class CircuitoF1 extends JPanel {
     	this.areaPista = calcularArea();
     	
         // Inicializar coche en un punto de partida adecuado (línea de meta)
-        cocheF1 = new CocheF1(1000, 450, this);
+        cocheF1 = new CocheF1(1000, 450, this,username);
         
         
         lineaMeta = crearLineaMeta();
@@ -110,11 +117,25 @@ public class CircuitoF1 extends JPanel {
 
         // Inicializar el timer para actualizar la animación
         timer = new Timer(30, new ActionListener() {
-            @Override
+       
             public void actionPerformed(ActionEvent e) {
+            	
+            	
+            	
+            	
                 if (!carreraFinalizada) {
-                    cocheF1.actualizar();
-                    actualizarJuego();
+                    try {
+						cocheF1.actualizar();
+					} catch (SQLException e1) {
+						// TODO Auto-generated catch block
+						e1.printStackTrace();
+					}
+                    try {
+						actualizarJuego();
+					} catch (SQLException e1) {
+						// TODO Auto-generated catch block
+						e1.printStackTrace();
+					}
                   
               
                  
@@ -226,11 +247,13 @@ public class CircuitoF1 extends JPanel {
     
  
 
+
+
+
 	private Path2D crearLineaMeta() {
 
         Path2D meta = new Path2D.Double();
-        // Colocar la meta delante de la posición inicial del coche (1000, 500)
-        // Ajusta estas coordenadas según la posición exacta donde quieres la meta
+       
         meta.moveTo(981, 400);
         meta.lineTo(1060, 400);
         meta.lineTo(1060, 350);
@@ -247,7 +270,7 @@ public class CircuitoF1 extends JPanel {
     }
     
     
-    private void actualizarJuego() {
+    private void actualizarJuego() throws SQLException {
         // Aplicar controles
         if (teclaArribaPresionada) {
             cocheF1.acelerar();
@@ -361,9 +384,7 @@ public class CircuitoF1 extends JPanel {
         g2d.setColor(Color.white);
         dibujarCirculosZona(g2d, 945, 410, 30, 90, 5, 2);
         
-        // Dibujar banners y tribunas
-        dibujarBannerVertical(g2d, 170, 350, 150);
-        dibujarBannerVertical(g2d, 950, 345, 100);
+      
         dibujarTribuna(g2d, 1100, 0, 70, 750, 25);
         
         
@@ -402,9 +423,7 @@ public class CircuitoF1 extends JPanel {
         g2d.drawLine(1052, 450, 1052 , 470);
         
       
-        
-        dibujarArbusto(g2d, 150, 220, 60, 50); 
-        dibujarArbusto(g2d, 150, 430, 60, 50);
+      
      
   
      
@@ -428,13 +447,49 @@ public class CircuitoF1 extends JPanel {
             alto = 40;
       }
         
-        imagen = new ImageIcon(getClass().getResource("/resources/Imagens/Ferrari/logopit.png")).getImage();
+        if(EquipoSeleccionado.equals("McLaren")) {
+            ancho= 365;
+            alto = 35;
+      }
+        if(EquipoSeleccionado.equals("Aston Martin")) {
+            ancho= 380;
+            alto = 70;
+      }
+        
+        imagen = new ImageIcon(getClass().getResource("/resources/Imagens/"+EquipoSeleccionado+"/logopit.png")).getImage();
             g.drawImage(imagen, ancho, alto, null);
         
-   
-    
+       imagen = new ImageIcon(getClass().getResource("/resources/Imagens/Arbustos/ArbustosHX.png")).getImage();
+       
+       int imgWidth = 100;
+       int imgHeight = 63;
+
+       // Dibujar la primera imagen (en la posición (200, 200))
+       drawRotatedImage(g2d, imagen, 120, 195, imgWidth, imgHeight);
+
+       // Dibujar la segunda imagen (en una posición diferente, por ejemplo, (400, 300))
+       drawRotatedImage(g2d, imagen, 120, 450, imgWidth, imgHeight);
+
+       imagen = new ImageIcon(getClass().getResource("/resources/Imagens/Arbustos/flags.png")).getImage();
+       g.drawImage(imagen, 895, 300, null);
+       imagen = new ImageIcon(getClass().getResource("/resources/Imagens/Arbustos/flags2.png")).getImage();
+       g.drawImage(imagen, 1065, 300, null);
     }
     
+    private void drawRotatedImage(Graphics2D g2d, Image img, int x, int y, int width, int height) {
+    	  AffineTransform originalTransform = g2d.getTransform();
+    
+        AffineTransform at = new AffineTransform();
+        at.translate(x + width / 2, y + height / 2); 
+        at.rotate(Math.toRadians(90)); 
+        at.translate(-width / 2, -height / 2); 
+
+        g2d.setTransform(at);
+        g2d.drawImage(img, 0, 0, width, height, this);
+        
+        g2d.setTransform(originalTransform);
+    }
+
     
     
     private Path2D crearPathPistaPrincipal() {
@@ -481,21 +536,7 @@ public class CircuitoF1 extends JPanel {
         return path;
     }
     
-    public void dibujarArbusto(Graphics2D g2d, int x, int y, int ancho, int alto) {
-        // Crear un degradado radial para el arbusto
-        RadialGradientPaint gradiente = new RadialGradientPaint(
-            new Point2D.Double(x + ancho / 2, y + alto / 2), // Centro
-            ancho / 2, // Radio del degradado
-            new float[]{0f, 1f}, // Distribución del color
-            new Color[]{new Color(0,123,0), new Color(0, 100, 0)} // Colores (verde claro a oscuro)
-        );
-
-        g2d.setPaint(gradiente);
-        g2d.fillOval(x, y, ancho, alto);
-        g2d.setPaint(Color.BLACK);
-        g2d.drawOval(x, y, ancho, alto); // Dibujar el arbusto con forma ovalada
-    }
-
+  
     
     private Area calcularArea() {
     	
@@ -551,44 +592,8 @@ public class CircuitoF1 extends JPanel {
     }
     
 
-    private void dibujarBannerVertical(Graphics2D g2d, int centroX, int centroY, int altura) {
-        AffineTransform originalTransform = g2d.getTransform();
-        
-        int ancho = 40;
-        int radioEsquina = 10;
-        
-        GradientPaint gradiente = new GradientPaint(
-            centroX, centroY - altura/2, new Color(188, 24, 35),
-            centroX, centroY + altura/2, new Color(188, 24, 35));
-        g2d.setPaint(gradiente);
-        g2d.fillRoundRect(centroX - ancho/2, centroY - altura/2, ancho, altura, radioEsquina, radioEsquina);
-        
-        g2d.setStroke(new BasicStroke(3));
-        g2d.setColor(Color.BLACK);
-        g2d.drawRoundRect(centroX - ancho/2, centroY - altura/2, ancho, altura, radioEsquina, radioEsquina);
-        
-        Font font = Main.GLOBAL_FONT.deriveFont(10f);
-        g2d.setFont(font);
-        String texto = "PIRELLI";
-        FontMetrics fm = g2d.getFontMetrics();
-        
-        g2d.rotate(Math.toRadians(-90), centroX, centroY);
-        int textX = centroX - altura/2 + (altura - fm.stringWidth(texto))/2;
-        int textY = centroY + fm.getAscent()/2;
-        
-        g2d.setColor(new Color(255,255,255, 80));
-        g2d.drawString(texto, textX + 2, textY + 2);
-        
-        g2d.setColor(Color.BLACK);
-        g2d.drawString(texto, textX, textY);
-        
-        g2d.setTransform(originalTransform);
-    }
 
-    private int ajustarTamañoFuente(int altura) {
-        int tamañoBase = altura / 5;
-        return Math.max(12, Math.min(18, tamañoBase));
-    }
+
 
 
 
@@ -649,7 +654,7 @@ public class CircuitoF1 extends JPanel {
     }
     
     private void dibujarEspectadores(Graphics2D g2d, int x, int y, int ancho, int alto, int densidad) {
-    	 Random rand = new Random(20000); 
+    	 Random rand = new Random(); 
         int tamPersona = Math.max(4, alto/8);
         
         for (int i = 0; i < densidad; i++) {
@@ -721,34 +726,34 @@ public class CircuitoF1 extends JPanel {
 
 
     private void mostrarConfirmacion() {
-        // Crear un panel personalizado con diseño moderno
+        
         JPanel panelMensaje = new JPanel(new BorderLayout(40, 40)); 
         panelMensaje.setBackground(new Color(45, 45, 45)); 
-        panelMensaje.setBorder(BorderFactory.createEmptyBorder(40, 20, 20, 20)); // Espaciado interno
+        panelMensaje.setBorder(BorderFactory.createEmptyBorder(40, 20, 20, 20)); 
 
-        // Crear mensaje con formato
+        
         JLabel texto = new JLabel("¿Estás seguro de que deseas regresar al menú principal?");
-        texto.setFont(Main.GLOBAL_FONT2.deriveFont(14f)); // Aumentar tamaño de fuente
-        texto.setForeground(new Color(255, 215, 0)); // Color dorado
+        texto.setFont(Main.GLOBAL_FONT2.deriveFont(14f)); 
+        texto.setForeground(new Color(255, 215, 0)); 
         texto.setHorizontalAlignment(SwingConstants.CENTER);
 
-        // Agregar componentes al panel
-        panelMensaje.add(texto, BorderLayout.CENTER); // Texto en el centro
+    
+        panelMensaje.add(texto, BorderLayout.CENTER); 
 
-        // Configuración de UIManager para colores
+     
         UIManager.put("OptionPane.background", new Color(45, 45, 45));
         UIManager.put("Panel.background", new Color(45, 45, 45));
-        UIManager.put("OptionPane.messageForeground", Color.WHITE); // Color del mensaje
+        UIManager.put("OptionPane.messageForeground", Color.WHITE); 
 
-        // Crear botones personalizados sin foco
+      
         JButton btnSi = new JButton("Sí");
         JButton btnNo = new JButton("No");
 
         btnSi.setBackground(new Color(100, 100, 100));
         btnSi.setForeground(Color.WHITE);
-        btnSi.setFont(Main.GLOBAL_FONT2.deriveFont(14f)); // Misma fuente que el mensaje
-        btnSi.setFocusPainted(false); // Eliminar borde de enfoque
-        btnSi.setBorder(BorderFactory.createEmptyBorder(10, 20, 10, 20)); // Botón más estilizado
+        btnSi.setFont(Main.GLOBAL_FONT2.deriveFont(14f)); 
+        btnSi.setFocusPainted(false); 
+        btnSi.setBorder(BorderFactory.createEmptyBorder(10, 20, 10, 20)); 
 
         btnNo.setBackground(new Color(100, 100, 100));
         btnNo.setForeground(Color.WHITE);
@@ -756,13 +761,13 @@ public class CircuitoF1 extends JPanel {
         btnNo.setFocusPainted(false);
         btnNo.setBorder(BorderFactory.createEmptyBorder(10, 20, 10, 20));
 
-        // Crear panel para botones
+        
         JPanel panelBotones = new JPanel();
         panelBotones.setBackground(new Color(45, 45, 45));
         panelBotones.add(btnSi);
         panelBotones.add(btnNo);
 
-        // Mostrar diálogo con diseño personalizado
+        
         JDialog dialog = new JDialog(SwingUtilities.getWindowAncestor(this), "Confirmación");
         dialog.setLayout(new BorderLayout());
         dialog.add(panelMensaje, BorderLayout.CENTER);
@@ -770,43 +775,55 @@ public class CircuitoF1 extends JPanel {
         dialog.pack();
         dialog.setLocationRelativeTo(this);
 
-        // Eventos de los botones
+      
         btnSi.addActionListener(e -> {
-            if (timer != null) timer.stop();
-            if (temporizador != null) temporizador.stop();
+        	timer.stop();
+        	temporizador.stop();
+        	cocheF1.detenerSonidos();
+        	
+        	if(!MusicaFondo.isPlaying()) {
+        		MusicaFondo.reproducirMusicaMenu();
+        	}
+      
             Window window = SwingUtilities.getWindowAncestor(this);
-            reiniciarCarrera();
+          
             if (window != null) window.dispose();
             dialog.dispose();
         });
 
         btnNo.addActionListener(e -> dialog.dispose());
 
-        // Mostrar el diálogo
+  
         dialog.setVisible(true);
     }
 
 
 
     private void dibujarTableroDatos(Graphics2D g2d) {
-        int x = 1000;
+        int x = 950;
         int y = 0;
-        int ancho = 200;
-        int alto = 80;
+        int ancho = 250;
+        int alto = 70;
         
-        // Fondo del tablero
+     
         GradientPaint fondoTablero = new GradientPaint(
             x, y, new Color(30, 30, 30),
             x, y + alto, new Color(60, 60, 60)
+            
         );
+  
+    
         g2d.setPaint(fondoTablero);
         g2d.fillRoundRect(x, y, ancho, alto, 15, 15);
         
-        // Borde del tablero
+  
+        
+    
         g2d.setStroke(new BasicStroke(3));
         g2d.setColor(new Color(100, 100, 100));
         g2d.drawRoundRect(x, y, ancho, alto, 15, 15);
-        // Detalles estéticos (tornillos en las esquinas)
+    
+        
         g2d.setColor(new Color(150, 150, 150));
         int radioTornillo = 5;
         g2d.fillOval(x + 8, y + 8, radioTornillo*2, radioTornillo*2);
@@ -814,51 +831,45 @@ public class CircuitoF1 extends JPanel {
         g2d.fillOval(x + 8, y + alto - 8 - radioTornillo*2, radioTornillo*2, radioTornillo*2);
         g2d.fillOval(x + ancho - 8 - radioTornillo*2, y + alto - 8 - radioTornillo*2, radioTornillo*2, radioTornillo*2);
         
-        // Línea divisoria
         g2d.setStroke(new BasicStroke(2));
         g2d.setColor(new Color(100, 100, 100));
         g2d.drawLine(x + 10, y + alto/2, x + ancho - 10, y + alto/2);
         
-        // Sección Vueltas
+        
         g2d.setFont(Main.GLOBAL_FONT.deriveFont(13f));
         g2d.setColor(new Color(253, 217, 0));
-        g2d.drawString("VUELTAS:", x + 15, y + 28);
+        g2d.drawString("VUELTAS:", x + 25, y + 28);
         
-        // Número de vueltas (estilo LED digital)
+        
         g2d.setFont(Main.Digital);
         g2d.setColor(new Color(255,255,255)); 
         g2d.drawString(String.format("%01d/%01d", vueltas, VUELTAS_PARA_FINALIZAR), 1120, y + 28);
         
-        // Sección Tiempo
+     
         g2d.setFont(Main.GLOBAL_FONT.deriveFont(13f));
         g2d.setColor(new Color(253, 217, 0));
-        g2d.drawString("TIEMPO:", x + 15, y + 28 + alto/2);
+        g2d.drawString("TIEMPO:", x + 25, y + 28 + alto/2);
         
-        // Tiempo (estilo LED digital)
+     
         g2d.setFont(Main.Digital.deriveFont(22f));
         g2d.setColor(new Color(255,255,255));
         
         String tiempoStr = String.format("%02d:%02d:%02d", minutos, segundos + segundosPenalizacion, milisegundos / 10);
-        g2d.drawString(tiempoStr, 1108, y + 28 + alto/2);
+        g2d.drawString(tiempoStr, 1105, y + 28 + alto/2);
         
-        // Mostrar penalización si es necesario
+   
         if (mostrandoPenalizacion) {
-            g2d.setColor(new Color(255, 0, 0, 200));
+            g2d.setColor(new Color(255, 242, 0));
             g2d.setFont(Main.GLOBAL_FONT.deriveFont(Font.BOLD, 24f));
-            g2d.drawString("+" + segundosPenalizacion + "s", 1050, 130);
+            g2d.drawString("+" + segundosPenalizacion + "s", 1060, 120);
         }
         
-        // Mostrar total de penalizaciones
-        if (Penalizacion > 0) {
-            g2d.setColor(new Color(255, 0, 0, 200));
-            g2d.setFont(Main.GLOBAL_FONT.deriveFont(12f));
-            g2d.drawString("Stop-and-go: " + Penalizacion ,1020, 95);
-        }
+       
     }
         
 
 
-// Agrega este método para finalizar la carrera
+
 private void finalizarCarrera() {
     carreraFinalizada = true;
     timer.stop();
@@ -866,15 +877,15 @@ private void finalizarCarrera() {
     if (timerPenalizacion != null) {
         timerPenalizacion.stop();
     }
-    
-    // Mostrar ventana de podio
+    cocheF1.detenerSonidos();
+   
     mostrarVentanaPodio();
 }
 
 
 
 
-// Método para mostrar la ventana de podio
+
 
 private void mostrarVentanaPodio() {
     JDialog podioDialog = new JDialog(SwingUtilities.getWindowAncestor(this), "¡Carrera Finalizada!");
@@ -890,7 +901,7 @@ private void mostrarVentanaPodio() {
             Graphics2D g2d = (Graphics2D) g;
             g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
             
-            // Fondo degradado
+          
             GradientPaint fondoGradiente = new GradientPaint(
                 0, 0, new Color(30, 30, 60),
                 0, getHeight(), new Color(15, 15, 30)
@@ -898,14 +909,13 @@ private void mostrarVentanaPodio() {
             g2d.setPaint(fondoGradiente);
             g2d.fillRect(0, 0, getWidth(), getHeight());
             
-            // Dibujar podio
-            g2d.setColor(new Color(255, 215, 0)); // Dorado
+            
+            g2d.setColor(new Color(255, 215, 0)); 
             g2d.fillRect(getWidth()/2 - 75, getHeight() - 200, 150, 180);
             g2d.setColor(Color.darkGray);
             g2d.setStroke(new BasicStroke(5));
             g2d.drawRect(getWidth()/2 - 75, getHeight() - 200, 150, 180);
             
-            // Dibujar confetti
             Random rand = new Random();
             for (int i = 0; i < 100; i++) {
                 g2d.setColor(new Color(
@@ -920,14 +930,14 @@ private void mostrarVentanaPodio() {
                 );
             }
             
-            // Dibujar coche
+           
             AffineTransform originalTransform = g2d.getTransform();
             g2d.translate(getWidth()/2, getHeight() - 130);
             g2d.scale(1.5, 1.5);
             cocheF1.dibujarStatico(g2d);
             g2d.setTransform(originalTransform);
             
-            // Dibujar texto
+      
             g2d.setColor(Color.WHITE);
             g2d.setFont(Main.GLOBAL_FONT.deriveFont(20f));
             g2d.drawString("¡CARRERA FINALIZADA!", getWidth()/2 - 150, 40);
@@ -938,7 +948,7 @@ private void mostrarVentanaPodio() {
             g2d.setFont(Main.GLOBAL_FONT.deriveFont(20f));
             g2d.drawString("Vueltas completadas: " + vueltas + "/" + VUELTAS_PARA_FINALIZAR, 50, 120);
             
-            // Calcular tiempo total con penalizaciones
+       
         
             int tiempoTotalSegundos = minutos * 60 + segundos + segundosPenalizacion;
             int minutosTotales = tiempoTotalSegundos / 60;
@@ -977,7 +987,14 @@ private void mostrarVentanaPodio() {
         @Override
         public void actionPerformed(ActionEvent e) {
             podioDialog.dispose();
-            reiniciarCarrera();
+            try {
+				reiniciarCarrera();
+				cocheF1.detenerSonidos();
+				   iniciar = 0;
+			} catch (SQLException e1) {
+			
+				e1.printStackTrace();
+			}
          
         }
     });
@@ -987,6 +1004,12 @@ private void mostrarVentanaPodio() {
         public void actionPerformed(ActionEvent e) {
             podioDialog.dispose();
             finalizarCarrera();
+            cocheF1.detenerSonidos();
+            if(!MusicaFondo.isPlaying()) {
+            	MusicaFondo.reproducirMusica("/resources/Audio/musicafondo.wav");
+        	}
+            
+           
             Window window = SwingUtilities.getWindowAncestor(CircuitoF1.this);
             if (window != null) window.dispose();
         }
@@ -995,7 +1018,7 @@ private void mostrarVentanaPodio() {
     panelBotones.add(btnVolverCorrer);
     panelBotones.add(btnVolverMenu);
     
-    // Make sure the dialog's layout is properly set
+  
     podioDialog.setLayout(new BorderLayout());
     podioDialog.add(panelPodio, BorderLayout.CENTER);
     podioDialog.add(panelBotones, BorderLayout.SOUTH);
@@ -1003,9 +1026,9 @@ private void mostrarVentanaPodio() {
     podioDialog.setVisible(true);
 }
 
-// Método para reiniciar la carrera
-private void reiniciarCarrera() {
-    // Reiniciar variables
+
+private void reiniciarCarrera() throws SQLException {
+ 
     vueltas = 0;
     segundos = 0;
     milisegundos = 0;
@@ -1014,10 +1037,10 @@ private void reiniciarCarrera() {
     segundosPenalizacion = 0;
     carreraFinalizada = false;
     
-    // Reiniciar coche
-    cocheF1 = new CocheF1(1000, 450, this);
+ 
+    cocheF1 = new CocheF1(1000, 450, this,username);
     
-    // Reiniciar temporizadores
+
     if (temporizador != null) {
         temporizador.start();
     }
@@ -1025,7 +1048,10 @@ private void reiniciarCarrera() {
         timer.start();
     }
     
-    // Solicitar enfoque
+    cocheF1.detenerSonidos();
+    iniciar = 0;
+    
+   
     requestFocus();
 }
 

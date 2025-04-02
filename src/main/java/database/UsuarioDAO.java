@@ -99,6 +99,51 @@ public class UsuarioDAO {
         return equipo;
     }
 
+    
+    
+    
+    public int obtenerIdUsuario(String nombreUsuario) {
+        Connection conn = null;
+        PreparedStatement stmt = null;
+        ResultSet rs = null;
+        int idUsuario = -1; // Valor por defecto en caso de error o si no se encuentra
+        
+        try {
+            conn = getConnection();
+            String query = "SELECT id_usuario FROM Usuarios WHERE nombre_usuario = ?";
+            stmt = conn.prepareStatement(query);
+            stmt.setString(1, nombreUsuario);
+            
+            rs = stmt.executeQuery();
+            
+            if (rs.next()) {
+                idUsuario = rs.getInt("id_usuario");
+            }
+            
+        } catch (SQLException e) {
+            System.err.println("Error al obtener ID de usuario: " + e.getMessage());
+            e.printStackTrace();
+        } finally {
+            closeResources(conn, stmt, rs);
+        }
+        
+        return idUsuario;
+    }
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
 
     public String obtenerIdEquipoUsuario(String nombreUsuario) {
         Connection conn = null;

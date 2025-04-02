@@ -7,11 +7,19 @@ import java.awt.RenderingHints;
 import java.awt.geom.AffineTransform;
 import java.awt.geom.Path2D;
 import java.awt.geom.Point2D;
-
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 
+import database.DatabaseConnection;
+import database.UsuarioDAO;
+import main.Main;
 import ui.CircuitoF1;
+import ui.GarageView;
+import utils.MusicaFondo;
 
 public class CocheF1 {
     // Posición y propiedades físicas
@@ -19,40 +27,42 @@ public class CocheF1 {
     private double velocidad;
     private double angulo; // En radianes
     private double aceleracion;
-    private double velocidadMaxima;
+    private static double velocidadMaxima;
     private double friccion;
-    private double maniobrabilidad;
+    private static double maniobrabilidad;
     private boolean frenando;
     private boolean acelerando;
     private int contadorAceleracion;
-    private double aceleracionInicial;
+    private static double aceleracionInicial;
     private double ultimaXValida, ultimaYValida;
     private double ultimoAnguloValido;
 
-    private Color colorPrincipal = new Color(200, 204, 206);
+    private Color ColorMain = new Color(200, 204, 206);
     private Color colorSecundario;
     private Color colorDetalles;
    private CircuitoF1 pista;
    private Point2D nuevaPosicion;
-
-
-  
-    // Tamaño del coche
+   private static UsuarioDAO usuarioDAO;
+   private static String username;
+   private static String IdSeleccionado;
+   private static int idUsuario;
+   
+   private static double agarre;
+   private static double potencia;
+   private static double velocidadMax;
+   private static double peso;
+   public MusicaFondo MusicaFondo;
     private int ancho;
     private int alto;
-    
-    // Colores
-  
-    
-    // Lista de puntos para la detección de colisiones
     private List<Point2D> puntosColision;
-    
-    // Para detectar si el coche está en la pista
     private boolean enPista;
     private boolean enPits;
-    
+    private boolean reproducciendoAceleracion = false;
+    private boolean reproducciendoFrenado = false;
+    private boolean reproducciendoIdleMotor = false;
+    private boolean reproducciendodesAceleracion = false;
 
-    public CocheF1(double x, double y, CircuitoF1 pista ) {
+    public CocheF1(double x, double y, CircuitoF1 pista ,String username) throws SQLException {
         this.x = x;
         this.y = y;
         this.velocidad = 0;
@@ -78,31 +88,117 @@ public class CocheF1 {
         this.ultimaXValida = x;
         this.ultimaYValida = y;
         this.ultimoAnguloValido = 0;
+        this.username = username;
+  	  	this.usuarioDAO = new UsuarioDAO();
+  	  	this.MusicaFondo = new MusicaFondo();
+  	  	
+  	  	idUsuario = usuarioDAO.obtenerIdUsuario(username);
+        IdSeleccionado = usuarioDAO.obtenerIdEquipoUsuario(username);
+  	  
+  	  	ColorMain = GarageView.stringToColor(usuarioDAO.obtenerColorPrincipalEquipo(IdSeleccionado));
+  	  
+  	
+  	
       
     }
     
-    public void actualizar() {
-        // Guardar la posición válida actual antes de mover
+    private void manejarSonidos() {
+        if (acelerando||velocidad > 2) {
+            // If we weren't already playing acceleration sound
+            if (!reproducciendoAceleracion) {
+                MusicaFondo.detenerMusica(); // Stop all current audio
+                MusicaFondo.reproducirAceleracion();
+                reproducciendoAceleracion = true;
+                reproducciendoFrenado = false;
+                reproducciendoIdleMotor = false;
+                reproducciendodesAceleracion = false;
+            }
+        } else if (frenando) {
+            // If we weren't already playing braking sound
+            if (!reproducciendoFrenado) {
+                MusicaFondo.detenerMusica(); // Stop all current audio
+                MusicaFondo.reproducirFrenado();
+                reproducciendoFrenado = true;
+                reproducciendoAceleracion = false;
+                reproducciendoIdleMotor = false;
+                reproducciendodesAceleracion = false;
+            }
+        
+        	
+        	  }else {
+        	
+            // If the car is neither accelerating nor braking but still moving
+            if (velocidad < 2) {
+                if (!reproducciendoIdleMotor) {
+                    MusicaFondo.detenerMusica(); // Stop all current audio
+                    MusicaFondo.reproducirIdleMotor(); // You need to add this method to MusicaFondo
+                    reproducciendoIdleMotor = true;
+                    reproducciendoAceleracion = false;
+                    reproducciendoFrenado = false;
+                    reproducciendodesAceleracion = false;
+                }
+            } else {
+                // Car is stopped or nearly stopped
+                if (reproducciendoAceleracion || reproducciendoFrenado || reproducciendoIdleMotor || reproducciendodesAceleracion) {
+                    MusicaFondo.detenerMusica();
+                    reproducciendoAceleracion = false;
+                    reproducciendoFrenado = false;
+                    reproducciendoIdleMotor = false;
+                    reproducciendodesAceleracion = false;
+                }
+              
+            }
+        }
+    }
+    
+    
+
+    public static void ActualizarSt(double potencia , double velocidadMax , double agarre) throws SQLException {
+    	  
+    	  
+    	  aceleracionInicial = ((potencia - peso)*0.0001 );
+    	  velocidadMaxima = ((velocidadMax - peso)*0.05 );
+    	  maniobrabilidad = (agarre*0.001);
+    	
+        
+    }
+
+    
+  
+    
+    
+    
+    
+    
+    
+    
+    public void actualizar() throws SQLException {
+    	   manejarSonidos();
+    	   
         if (enPista) {
             ultimaXValida = x;
             ultimaYValida = y;
             ultimoAnguloValido = angulo;
+           
         }
-        
+   	  
        
         
         if (acelerando) {
+        
             contadorAceleracion++;
             // Mejora de la aceleración inicial y progresiva
             double factorAceleracion = Math.min(1.5 + (contadorAceleracion / 60.0), 8); // Aumentado de 1.0 a 1.5 y reducido de 60 a 50
             velocidad = Math.min(velocidad + (aceleracion * factorAceleracion), velocidadMaxima);
         } else {
+        
             // Mantener parte de la aceleración ganada
             contadorAceleracion = Math.max(0, contadorAceleracion - 5); // Desacelera gradualmente
         }
         
         // Aplicar frenado
         if (frenando) {
+        	
             velocidad *= 0.85; // Frenado más intenso (de 0.9 a 0.85)
         }
         
@@ -204,7 +300,7 @@ public class CocheF1 {
         cuerpo.lineTo(-ancho/2, alto/2);
         cuerpo.closePath();
         
-        g2d.setColor(colorPrincipal);
+        g2d.setColor(ColorMain);
         g2d.fill(cuerpo);
         g2d.setColor(Color.BLACK);
         g2d.setStroke(new BasicStroke(1.0f));
@@ -241,7 +337,7 @@ public class CocheF1 {
         g2d.fillRect(-ancho/2-2, alto/2, ancho+4, 6);
         
         // Soporte del alerón trasero
-        g2d.setColor(colorPrincipal);
+        g2d.setColor(ColorMain);
         g2d.fillRect(-ancho/6, alto/3, ancho/3, alto/6);
         
         // Ruedas
@@ -323,7 +419,7 @@ public class CocheF1 {
         cuerpo.lineTo(-ancho/2, alto/2);
         cuerpo.closePath();
         
-        g2d.setColor(colorPrincipal);
+        g2d.setColor(ColorMain);
         g2d.fill(cuerpo);
         g2d.setColor(Color.BLACK);
         g2d.setStroke(new BasicStroke(1.0f));
@@ -360,7 +456,7 @@ public class CocheF1 {
         g2d.fillRect(-ancho/2-2, alto/2, ancho+4, 6);
         
         // Soporte del alerón trasero
-        g2d.setColor(colorPrincipal);
+        g2d.setColor(ColorMain);
         g2d.fillRect(-ancho/6, alto/3, ancho/3, alto/6);
         
         // Ruedas
@@ -422,9 +518,22 @@ public class CocheF1 {
     public void setAngulo(double angulo) {
         this.angulo = angulo;
     }
+    
+    public void detenerSonidos() {
+        MusicaFondo.detenerMusica();
+        reproducciendoAceleracion = false;
+        reproducciendoFrenado = false;
+        reproducciendoIdleMotor = false;
+        reproducciendodesAceleracion = false;
+       
+       
+    }
 
 	
+    
+            
+        
+    
 
-
-
+	
 }

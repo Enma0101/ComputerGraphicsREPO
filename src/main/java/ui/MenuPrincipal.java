@@ -10,7 +10,7 @@ import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
-
+import java.sql.SQLException;
 
 import javax.swing.Box;
 import javax.swing.BoxLayout;
@@ -25,21 +25,29 @@ import javax.swing.border.EmptyBorder;
 import javax.swing.border.LineBorder;
 
 import main.Main;
+import utils.MusicaFondo;
 
 
 
 public class MenuPrincipal extends JFrame {
 	private JDialog dialog = null;
 	private String username;
+	public MusicaFondo MusicaFondo;
+	
 
 	 
-    public MenuPrincipal(String username) {
+    public MenuPrincipal(String username, MusicaFondo musicaFondo) {
     	this.username = username;
  this.setSize(1200,750);
     	this.setLocationRelativeTo(null);
         this.setDefaultCloseOperation(EXIT_ON_CLOSE);
         this.setUndecorated(true);
         this.setLayout(new BorderLayout());
+        this.MusicaFondo = musicaFondo;
+        
+  
+      
+       
         
         // Panel principal con fondo negro
         JPanel mainPanel = new JPanel() {
@@ -68,7 +76,6 @@ public class MenuPrincipal extends JFrame {
         JButton[] buttons = {
             createMenuButton("CARRERA"),
             createMenuButton("GARAGE"),
-            createMenuButton("HISTORIAL"),
             createMenuButton("CONFIGURACIÓN"),
             createMenuButton("SALIR")
         };
@@ -91,7 +98,13 @@ public class MenuPrincipal extends JFrame {
     	
     	buttons[0].addActionListener(e -> {
     	    SwingUtilities.invokeLater(() -> {
-    	        openCircuitoF1();
+    	        try {
+					openCircuitoF1();
+						
+				} catch (SQLException e1) {
+					
+					e1.printStackTrace();
+				}
     	    });
     	});
     	
@@ -109,21 +122,19 @@ public class MenuPrincipal extends JFrame {
         });
         
         
-		/*buttons[3].addActionListener(e -> {
-		            
+		buttons[2].addActionListener(e -> {
 		            SwingUtilities.invokeLater(() -> {
 		            	openConfiguraciones();
-		               
+		           
 		            });
 		        });
         
-        */
-        
+     
         
         
         
         // Botón SALIR
-        buttons[4].addActionListener(e -> System.exit(0));
+        buttons[3].addActionListener(e -> System.exit(0));
     }
     
     // Estilo de los botones
@@ -165,7 +176,7 @@ public class MenuPrincipal extends JFrame {
     
     private void openGarageView() {
         if (dialog == null || !dialog.isVisible()) {
-            GarageView garageView = new GarageView(username);
+            GarageView garageView = new GarageView(username,MusicaFondo);
             dialog = new JDialog((JFrame) SwingUtilities.getWindowAncestor(this), "Pit Stop", true);
             dialog.setContentPane(garageView);
             dialog.setSize(1200, 750);
@@ -176,23 +187,32 @@ public class MenuPrincipal extends JFrame {
     }
 
 
-    private void openCircuitoF1() {
-        CircuitoF1 circuitoF1 = new CircuitoF1(username);
+    private void openCircuitoF1() throws SQLException {
+    	
+    	  MusicaFondo.detenerMusicaFondo();;
+        CircuitoF1 circuitoF1 = new CircuitoF1(username,MusicaFondo);
         JDialog dialog = new JDialog((JFrame) SwingUtilities.getWindowAncestor(this), "Carrera", true);
         dialog.setContentPane(circuitoF1);
-        dialog.setSize(1200, 750);
+      dialog.setSize(1200, 750);
         dialog.setLocationRelativeTo(this);
         dialog.setUndecorated(true);
         dialog.setVisible(true);
         dialog.addWindowListener(new java.awt.event.WindowAdapter() {
             public void windowClosed(java.awt.event.WindowEvent windowEvent) {
-                // Esto asegura que el recurso de la ventana se libere después de cerrar.
+              
                 dialog.dispose();
             }
         });
     }
         
-    
+    private void openConfiguraciones() {
+        if (dialog == null || !dialog.isVisible()) {
+            Configuracion configuracion = new Configuracion(this, username, MusicaFondo);
+            configuracion.setSize(1200, 750); 
+            configuracion.setLocationRelativeTo(this);
+            configuracion.setVisible(true);
+        }
+    }
 
         
     }

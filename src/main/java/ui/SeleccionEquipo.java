@@ -5,35 +5,48 @@ import java.awt.event.ActionListener;
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 import database.UsuarioDAO;
+import main.Main;
+import utils.MusicaFondo;
 
-public class SeleccionEquipo extends JFrame {
+public class SeleccionEquipo extends JDialog {
     private String username;
     private UsuarioDAO usuarioDAO;
     private String[] equipos = {"Ferrari", "Red Bull", "Mercedes", "McLaren", "Aston Martin"};
+    public MusicaFondo MusicaFondo;
+
     
-    public SeleccionEquipo(String username) {
+    // Constructor para primer acceso
+    public SeleccionEquipo(String username, MusicaFondo musicaFondo) {
+        this(username, false, musicaFondo);
+        this.MusicaFondo = musicaFondo;
+    }
+    
+    // Constructor con parámetro para cambiar equipo
+    public SeleccionEquipo(String username, boolean cambiarEquipo,MusicaFondo musicaFondo ) {
         this.username = username;
         this.usuarioDAO = new UsuarioDAO();
+        this.MusicaFondo = musicaFondo;
         
-        // Verificar si el usuario ya tiene un equipo asignado
-        String equipoActual = usuarioDAO.obtenerEquipoUsuario(username);
-      
-        // Si ya tiene un equipo, ir directamente al menú principal
-        if (equipoActual != null && !equipoActual.isEmpty()) {
-        	  System.out.print(equipoActual);
-            new MenuPrincipal(username).setVisible(true);
-            dispose();
-            return;
+        // Verificar si el usuario ya tiene un equipo asignado y no estamos en modo cambio
+        if (!cambiarEquipo) {
+            String equipoActual = usuarioDAO.obtenerEquipoUsuario(username);
+            
+            // Si ya tiene un equipo, ir directamente al menú principal
+            if (equipoActual != null && !equipoActual.isEmpty()) {
+                System.out.print(equipoActual);
+                new MenuPrincipal(username,MusicaFondo).setVisible(true);
+                dispose();
+                return;
+            }
         }
         
-        // Configuración básica del JFrame
+      
         this.setSize(1200, 750);
         this.setLocationRelativeTo(null);
-        this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         this.setUndecorated(true); 
         this.setLayout(new BorderLayout());
         
-        // Panel principal con fondo degradado
+        
         JPanel mainPanel = new JPanel() {
             @Override
             protected void paintComponent(Graphics g) {
@@ -46,8 +59,7 @@ public class SeleccionEquipo extends JFrame {
         mainPanel.setLayout(new BoxLayout(mainPanel, BoxLayout.Y_AXIS));
         mainPanel.setBorder(new EmptyBorder(50, 0, 50, 0));
         
-        // Título con estilo coherente con MenuPrincipal y Login
-        JLabel titleLabel = new JLabel("SELECCIONA TU EQUIPO");
+        JLabel titleLabel = new JLabel(cambiarEquipo ? "CAMBIAR EQUIPO" : "SELECCIONA TU EQUIPO");
         titleLabel.setFont(new Font("Press Start 2P", Font.BOLD, 40));
         titleLabel.setForeground(new Color(255, 215, 0)); // Dorado como en MenuPrincipal
         titleLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
@@ -77,7 +89,13 @@ public class SeleccionEquipo extends JFrame {
         backButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                new Login().setVisible(true);
+                if (cambiarEquipo) {
+                    // Si estábamos cambiando de equipo, volvemos a la configuración
+                    new MenuPrincipal(username,MusicaFondo).setVisible(true);
+                } else {
+                    // Si era primera selección, volvemos al login
+                    new Login(MusicaFondo).setVisible(true);
+                }
                 dispose();
             }
         });
@@ -99,7 +117,7 @@ public class SeleccionEquipo extends JFrame {
             }
         };
         
-        button.setFont(new Font("Press Start 2P", Font.PLAIN, 20));
+        button.setFont(Main.GLOBAL_FONT.deriveFont(15f));
         button.setForeground(Color.WHITE);
         button.setAlignmentX(Component.CENTER_ALIGNMENT);
         button.setMaximumSize(new Dimension(400, 60));
@@ -149,7 +167,7 @@ public class SeleccionEquipo extends JFrame {
             public void actionPerformed(ActionEvent e) {
                 usuarioDAO.asignarEquipoUsuario(username, equipo);
                 JOptionPane.showMessageDialog(null, "Has seleccionado " + equipo, "Equipo Asignado", JOptionPane.INFORMATION_MESSAGE);
-                new MenuPrincipal(username).setVisible(true);
+                new MenuPrincipal(username,MusicaFondo).setVisible(true);
                 dispose();
             }
         });

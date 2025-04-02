@@ -1,22 +1,24 @@
 package graphics;
-
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.image.BufferedImage;
 import java.net.URL;
+import utils.MusicaFondo; // Import the MusicaFondo class
 
 public class DoorAnimation {
     private JLabel panelPuerta;
     private int puertaY = 0; 
     private Timer animationTimer;
     private Color colorMain;
-
-    public DoorAnimation(Color colorMain) {
+    private MusicaFondo musicPlayer; // Add music player for sound effects
+    
+    public DoorAnimation(Color colorMain,MusicaFondo musicPlayer) {
         this.colorMain = colorMain;
+        this.musicPlayer = musicPlayer; // Initialize the music player
     }
-
+    
     public JLabel createDoorPanel(int width, int height) {
         panelPuerta = new JLabel();
         panelPuerta.setBounds(0, puertaY, width, height);
@@ -33,8 +35,11 @@ public class DoorAnimation {
         
         return panelPuerta;
     }
-
+    
     public void startDoorAnimation() {
+        // Play garage door opening sound
+        playDoorOpenSound();
+        
         animationTimer = new Timer(10, new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
@@ -43,13 +48,29 @@ public class DoorAnimation {
                     panelPuerta.setBounds(0, puertaY, 1200, 750);
                     panelPuerta.repaint();
                 } else {
-                    animationTimer.stop(); 
+                    animationTimer.stop();
+                   
+                     musicPlayer.detenerMusica();
+                     musicPlayer.reproducirMusica("/resources/Audio/musicafondo.wav");
                 }
             }
         });
         animationTimer.start();
     }
-
+    
+    private void playDoorOpenSound() {
+    	musicPlayer.detenerMusica();
+        musicPlayer.reproducirMusica("/resources/Audio/garage_door.wav");
+    }
+    
+    
+    public void stopAnimation() {
+        if (animationTimer != null && animationTimer.isRunning()) {
+            animationTimer.stop();
+        }
+        musicPlayer.detenerMusica();
+    }
+    
     public BufferedImage createCarbonFiberTexture(int width, int height) {
         BufferedImage texture = new BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB);
         Graphics2D g2d = texture.createGraphics();

@@ -10,6 +10,7 @@ import javax.swing.*;
 import database.UsuarioDAO;
 import graphics.DoorAnimation;
 import main.Main;
+import utils.MusicaFondo;
 
 
 public class GarageView extends JPanel {
@@ -19,8 +20,10 @@ public class GarageView extends JPanel {
     private Color ColorMain ;
     private Color ColorSen ;
     private String username;
+    private int IdUser;
     private String IdSeleccionado;
     private UsuarioDAO usuarioDAO;
+    private MusicaFondo musicPlayer;
     
 
 
@@ -30,14 +33,14 @@ public class GarageView extends JPanel {
     private JButton buttonBack, buttonModificar;
     private DoorAnimation doorAnimation;
 
-    public GarageView(String username) {
+    public GarageView(String username, MusicaFondo MusicPlayer) {
     	  this.username = username;
     	  this.usuarioDAO = new UsuarioDAO();
- 
+    	  this.musicPlayer = MusicPlayer;
     	
     	  EquipoSeleccionado = usuarioDAO.obtenerEquipoUsuario(username);
     	
-    	  
+    	  IdUser = usuarioDAO.obtenerIdUsuario(username);
     	  IdSeleccionado = usuarioDAO.obtenerIdEquipoUsuario(username);
     	  
     	  ColorMain = stringToColor(usuarioDAO.obtenerColorPrincipalEquipo(IdSeleccionado));
@@ -47,7 +50,7 @@ public class GarageView extends JPanel {
     	  
     	  
         setLayout(new BorderLayout());
-        doorAnimation = new DoorAnimation(ColorMain);
+        doorAnimation = new DoorAnimation(ColorMain,musicPlayer);
      
         JPanel contentPanelWithTexture = new JPanel() {
             @Override
@@ -190,7 +193,7 @@ public class GarageView extends JPanel {
     }
 
     private void openPitStopView() {
-        PitStopView pitStopView = new PitStopView(ColorMain, EquipoSeleccionado, ColorSen);
+        PitStopView pitStopView = new PitStopView(ColorMain, EquipoSeleccionado, ColorSen,IdUser,Integer.parseInt(IdSeleccionado));
         Window parentWindow = SwingUtilities.getWindowAncestor(this);
         JDialog dialog = new JDialog(parentWindow, "Pit Stop", Dialog.ModalityType.APPLICATION_MODAL);
         dialog.setContentPane(pitStopView);
@@ -236,7 +239,7 @@ public class GarageView extends JPanel {
         panelStats.setOpaque(false);
         panelStats.setBorder(BorderFactory.createEmptyBorder(80, 100, 0, 50)); 
 
-        // Crear etiquetas de estadísticas
+       
         Font fontStats = Main.GLOBAL_FONT2;
         
         stad = createStatLabel("ESTADÍSTICAS ACTUALES", fontStats, ColorSen);
@@ -245,7 +248,7 @@ public class GarageView extends JPanel {
         Potencia = createStatLabel("Potencia: 1000 HP", fontStats, Color.WHITE);
         Peso = createStatLabel("Peso: 740 kg", fontStats, Color.WHITE);
 
-        // Añadir etiquetas con espaciado
+       
         panelStats.add(stad);
         panelStats.add(Box.createVerticalStrut(30));
         panelStats.add(Agarre);
@@ -286,7 +289,7 @@ public class GarageView extends JPanel {
         return logoLabel;
     }
 
-    private Color stringToColor(String rgb) {
+    public static Color stringToColor(String rgb) {
         String[] rgbValues = rgb.split(",");
         int red = Integer.parseInt(rgbValues[0].trim());
         int green = Integer.parseInt(rgbValues[1].trim());
